@@ -1,4 +1,4 @@
-package com.example.user.bluetooth_discoverdevices;
+package com.example.monith.test;
 
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;

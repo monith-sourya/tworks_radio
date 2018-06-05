@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
 
 
     public ArrayList<BluetoothDevice> mBTDevices = new ArrayList<>();
-    public com.example.user.bluetooth_discoverdevices.DeviceListAdapter mDeviceListAdapter;
+    public DeviceListAdapter mDeviceListAdapter;
     ListView lvNewDevices;
 
     private void scrollToBottom()
@@ -118,7 +118,7 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
                 mBTDevices.add(device);
                 logView.append("onReceive: " + device.getName() + ": " + device.getAddress()+"\n");
                 scrollToBottom();
-                mDeviceListAdapter = new com.example.user.bluetooth_discoverdevices.DeviceListAdapter(context, R.layout.device_adapter_view, mBTDevices);
+                mDeviceListAdapter = new DeviceListAdapter(context, R.layout.device_adapter_view, mBTDevices);
                 lvNewDevices.setAdapter(mDeviceListAdapter);
             }
         }
@@ -328,6 +328,8 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
                 mBluetoothAdapter.startDiscovery();
                 IntentFilter discoverDevicesIntent = new IntentFilter(BluetoothDevice.ACTION_FOUND);
                 registerReceiver(mBroadcastReceiver3, discoverDevicesIntent);
+                logView.append("Starting Discovery again.\n");
+                scrollToBottom();
             }
             if (!mBluetoothAdapter.isDiscovering()) {
 
@@ -338,6 +340,18 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
                 IntentFilter discoverDevicesIntent = new IntentFilter(BluetoothDevice.ACTION_FOUND);
                 registerReceiver(mBroadcastReceiver3, discoverDevicesIntent);
             }
+        }
+    }
+
+    public void btnCancelDiscover(View view){
+
+        logView = (TextView)findViewById(R.id.logText);
+        logScroll = (ScrollView) findViewById(R.id.ScrollPane);
+
+        if(mBluetoothAdapter.isDiscovering()){
+            mBluetoothAdapter.cancelDiscovery();
+            logView.append("Cancelled Discovery");
+            scrollToBottom();
         }
     }
 
