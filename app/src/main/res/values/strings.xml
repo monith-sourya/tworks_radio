@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Test</string>
+    <string name="action_settings">Settings</string>
+    <string name="state_one">State One</string>
+    <string name="state_two">State Two</string>
+    <string name="home_longpress">Long Pressed</string>
+    <string name="box_login">Name</string>
+    <string name="pass">Password</string>
+    <string name="log_button">Switch State</string>
+    <string name="btnONOFF">BT On/Off</string>
+
+</resources>
