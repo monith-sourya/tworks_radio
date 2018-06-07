@@ -309,7 +309,7 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
             logView.append("Incoming Message: "+ text+"\n");
             scrollToBottom();
         }
-    }
+    };
 
     public void startConnection(){
         startBTConnection(mBTDevice, MY_UUID_INSECURE);
