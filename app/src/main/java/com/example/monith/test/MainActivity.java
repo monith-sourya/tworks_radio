@@ -11,13 +11,16 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -26,10 +29,14 @@ import android.view.MotionEvent;
 import android.view.GestureDetector;
 import android.support.v4.view.GestureDetectorCompat;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.UUID;
+import com.example.monith.test.BluetoothConnectionService;
+
 
 public class MainActivity extends AppCompatActivity implements GestureDetector.OnGestureListener,
-        GestureDetector.OnDoubleTapListener{
+        GestureDetector.OnDoubleTapListener, AdapterView.OnItemClickListener{
 
     private static final String TAG = "MainActivity";
 
@@ -40,10 +47,24 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
     private TextView logView;
     private ScrollView logScroll;
 
+    private Button btnStartConnection;
+    private Button btnSend;
+    private EditText etSend;
+
+    StringBuilder messages;
+
 
     public ArrayList<BluetoothDevice> mBTDevices = new ArrayList<>();
     public DeviceListAdapter mDeviceListAdapter;
     ListView lvNewDevices;
+
+    BluetoothConnectionService mBluetoothConnection;
+
+    private static final UUID MY_UUID_INSECURE =
+            UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66");
+
+
+    private BluetoothDevice mBTDevice;
 
     private void scrollToBottom()
     {
@@ -124,6 +145,35 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
         }
     };
 
+    private BroadcastReceiver mBroadcastReceiver4 = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+             final String action = intent.getAction();
+
+             logView = (TextView)findViewById(R.id.logText);
+             logScroll = (ScrollView) findViewById(R.id.ScrollPane);
+
+             if(action.equals(BluetoothDevice.ACTION_BOND_STATE_CHANGED)){
+                 BluetoothDevice mDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+
+                 if(mDevice.getBondState()== BluetoothDevice.BOND_BONDED){
+                    logView.append("Device Bonded. \n");
+                    scrollToBottom();
+
+                    mBTDevice = mDevice;
+                 }
+                 if(mDevice.getBondState()==BluetoothDevice.BOND_BONDING){
+                     logView.append("Device bonding. \n");
+                     scrollToBottom();
+                 }
+                 if(mDevice.getBondState()== BluetoothDevice.BOND_NONE){
+                    logView.append("BOND_None. \n");
+                    scrollToBottom();
+                 }
+             }
+        }
+    };
+
 
 
     public final void enableDisableBT(){
@@ -162,6 +212,14 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
         this.gestureDetector = new GestureDetectorCompat(this, this);
         gestureDetector.setOnDoubleTapListener(this);
 
+        btnStartConnection = (Button) findViewById(R.id.btnStartConn);
+        btnSend = (Button) findViewById(R.id.btnSend);
+
+        etSend = (EditText) findViewById(R.id.etSend);
+
+        logView = (TextView)findViewById(R.id.logText);
+        logScroll = (ScrollView) findViewById(R.id.ScrollPane);
+
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -170,6 +228,7 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
                         .setAction("Action", null).show();
             }
         });
+
 
         Button logButton = (Button)findViewById(R.id.logButton);
 
@@ -197,6 +256,10 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
             }
         });
 
+        lvNewDevices.setOnItemClickListener(MainActivity.this);
+
+
+
 //Bluetooth Code Below
 
         Button btnONOFF = (Button) findViewById(R.id.btnONOFF);
@@ -212,6 +275,52 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
             }
         });
 
+
+        //Broadcast receiver for bond state change.
+
+        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
+        registerReceiver(mBroadcastReceiver4, filter);
+
+        btnStartConnection.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startConnection();
+            }
+        });
+
+        btnSend.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                byte[] bytes = etSend.getText().toString().getBytes(Charset.defaultCharset());
+                mBluetoothConnection.write(bytes);
+
+                etSend.setText("");
+            }
+        });
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, new IntentFilter("incomingMessage"));
+    }
+
+    BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String text = intent.getStringExtra("theMessage");
+
+            logView.append("Incoming Message: "+ text+"\n");
+            scrollToBottom();
+        }
+    }
+
+    public void startConnection(){
+        startBTConnection(mBTDevice, MY_UUID_INSECURE);
+    }
+    /**
+     * starting chat service method
+     */
+    public void startBTConnection(BluetoothDevice device, UUID uuid){
+        Log.d(TAG, "startBTConnection: Initializing RFCOM Bluetooth Connection.");
+
+        mBluetoothConnection.startClient(device,uuid);
     }
 
     @Override
@@ -298,10 +407,13 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
     @Override
     protected void onDestroy() {
         Log.d(TAG, "onDestroy: called.");
-        super.onDestroy();
+
         unregisterReceiver(mBroadcastReceiver1);
         unregisterReceiver(mBroadcastReceiver3);
-        //mBluetoothAdapter.cancelDiscovery();
+        unregisterReceiver(mBroadcastReceiver4);
+
+        mBluetoothAdapter.cancelDiscovery();
+        super.onDestroy();
     }
 
     public void btnDiscover(View view) {
@@ -372,6 +484,35 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
             }
         }else{
             Log.d(TAG, "checkBTPermissions: No need to check permissions. SDK version < LOLLIPOP.");
+        }
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+
+        logView = (TextView)findViewById(R.id.logText);
+        logScroll = (ScrollView) findViewById(R.id.ScrollPane);
+
+        mBluetoothAdapter.cancelDiscovery();
+        String deviceName = mBTDevices.get(position).getName();
+        String deviceAddress = mBTDevices.get(position).getAddress();
+
+        logView.append("Device Selected. \n");
+        scrollToBottom();
+        logView.append("Device Name: "+ deviceName+"\n");
+        scrollToBottom();
+        logView.append("Device Address: " + deviceAddress+ "\n");
+        scrollToBottom();
+
+        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2){
+            logView.append("Trying to Pair with Device: "+deviceName+"\n");
+            scrollToBottom();
+            mBTDevices.get(position).createBond();
+
+            mBTDevice = mBTDevices.get(position);
+            mBluetoothConnection = new BluetoothConnectionService(MainActivity.this);
+
         }
     }
 }
