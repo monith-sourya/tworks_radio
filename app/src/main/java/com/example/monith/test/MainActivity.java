@@ -28,12 +28,13 @@ import android.widget.TextView;
 import android.view.MotionEvent;
 import android.view.GestureDetector;
 import android.support.v4.view.GestureDetectorCompat;
+import android.widget.Toast;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Set;
 import java.util.UUID;
 import com.example.monith.test.BluetoothConnectionService;
-
 
 public class MainActivity extends AppCompatActivity implements GestureDetector.OnGestureListener,
         GestureDetector.OnDoubleTapListener, AdapterView.OnItemClickListener{
@@ -51,9 +52,10 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
     private Button btnSend;
     private EditText etSend;
 
-    StringBuilder messages;
+    private boolean deviceFound;
+    private static final String DEVICE_NAME = "HC-05";
 
-
+    private boolean connectionStatus;
     public ArrayList<BluetoothDevice> mBTDevices = new ArrayList<>();
     public DeviceListAdapter mDeviceListAdapter;
     ListView lvNewDevices;
@@ -61,7 +63,7 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
     BluetoothConnectionService mBluetoothConnection;
 
     private static final UUID MY_UUID_INSECURE =
-            UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66");
+            UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
 
     private BluetoothDevice mBTDevice;
@@ -284,7 +286,24 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
         btnStartConnection.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startConnection();
+                findDevice();
+
+
+                if (deviceFound){
+
+                    startConnection();
+
+                    Context context = getApplicationContext();
+                    String text = "Successfully Connected to Device.";
+                    Toast toast = Toast.makeText(context, text, Toast.LENGTH_SHORT);
+                    toast.show();
+                }else{
+
+                    Context context = getApplicationContext();
+                    String text = "Device Not Found in Paired List.";
+                    Toast toast = Toast.makeText(context, text, Toast.LENGTH_LONG);
+                    toast.show();
+                }
             }
         });
 
@@ -292,7 +311,13 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
             @Override
             public void onClick(View v) {
                 byte[] bytes = etSend.getText().toString().getBytes(Charset.defaultCharset());
+                String s = etSend.getText().toString();
+
+
                 mBluetoothConnection.write(bytes);
+
+                logView.append("Sending Message: "+ s +"\n");
+                scrollToBottom();
 
                 etSend.setText("");
             }
@@ -467,6 +492,34 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
         }
     }
 
+    public void leftClick(View view){
+
+        logView = (TextView)findViewById(R.id.logText);
+        logScroll = (ScrollView) findViewById(R.id.ScrollPane);
+
+        String x = "3";
+        byte[] bytes = x.getBytes(Charset.defaultCharset());
+
+        mBluetoothConnection.write(bytes);
+
+        logView.append("Sending Message: "+ x +"\n");
+        scrollToBottom();
+
+    }
+
+    public void rightClick(View view){
+
+        logView = (TextView)findViewById(R.id.logText);
+        logScroll = (ScrollView) findViewById(R.id.ScrollPane);
+
+        String x = "4";
+        byte[] bytes = x.getBytes(Charset.defaultCharset());
+
+        mBluetoothConnection.write(bytes);
+        logView.append("Sending Message: "+ x +"\n");
+        scrollToBottom();
+
+    }
     /**
      * This method is required for all devices running API23+
      * Android must programmatically check the permissions for bluetooth. Putting the proper permissions
@@ -511,8 +564,26 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
             mBTDevices.get(position).createBond();
 
             mBTDevice = mBTDevices.get(position);
+
             mBluetoothConnection = new BluetoothConnectionService(MainActivity.this);
 
         }
+    }
+
+    private void findDevice() {
+        Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+
+        deviceFound = false;
+
+        if (pairedDevices.size() > 0) {
+            for (BluetoothDevice device : pairedDevices) {
+                if (device.getName().equals(DEVICE_NAME)) {
+                    mBTDevice = device;
+                    deviceFound = true;
+                    break;
+                }
+            }
+        }
+
     }
 }
