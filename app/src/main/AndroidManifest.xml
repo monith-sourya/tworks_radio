@@ -3,10 +3,11 @@
     package="com.example.monith.test">
 
     <uses-feature android:name="android.hardware.bluetooth" />
+
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.BLUETOOTH_PRIVILEGED" />
 
     <application
@@ -26,6 +27,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".PairActivity"
+            android:label="@string/title_activity_pair"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".ControlActivity"
+            android:label="@string/title_activity_control"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

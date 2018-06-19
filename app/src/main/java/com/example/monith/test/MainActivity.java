@@ -32,33 +32,30 @@ import android.widget.Toast;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.UUID;
 import com.example.monith.test.BluetoothConnectionService;
 
-public class MainActivity extends AppCompatActivity implements GestureDetector.OnGestureListener,
-        GestureDetector.OnDoubleTapListener, AdapterView.OnItemClickListener{
+public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
-
-    private TextView view ;
-    private GestureDetectorCompat gestureDetector;
+//
+//    private TextView view ;
+//    private GestureDetectorCompat gestureDetector;
     private BluetoothAdapter mBluetoothAdapter;
 
     private TextView logView;
     private ScrollView logScroll;
 
     private Button btnStartConnection;
-    private Button btnSend;
-    private EditText etSend;
 
     private boolean deviceFound;
     private static final String DEVICE_NAME = "HC-05";
 
-    private boolean connectionStatus;
-    public ArrayList<BluetoothDevice> mBTDevices = new ArrayList<>();
-    public DeviceListAdapter mDeviceListAdapter;
-    ListView lvNewDevices;
+//    public ArrayList<BluetoothDevice> mBTDevices = new ArrayList<>();
+//    public DeviceListAdapter mDeviceListAdapter;
+//    ListView lvNewDevices;
 
     BluetoothConnectionService mBluetoothConnection;
 
@@ -121,81 +118,81 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
         }
     };
 
-    /**
-     * Broadcast Receiver for listing devices that are not yet paired
-     * -Executed by btnDiscover() method.
-     */
-    private BroadcastReceiver mBroadcastReceiver3 = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            final String action = intent.getAction();
+//    /**
+//     * Broadcast Receiver for listing devices that are not yet paired
+//     * -Executed by btnDiscover() method.
+//     */
+//    private BroadcastReceiver mBroadcastReceiver3 = new BroadcastReceiver() {
+//        @Override
+//        public void onReceive(Context context, Intent intent) {
+//            final String action = intent.getAction();
+//
+//            logView = (TextView)findViewById(R.id.logText);
+//            logScroll = (ScrollView) findViewById(R.id.ScrollPane);
+//
+//            logView.append("onReceive: ACTION FOUND.\n");
+//            scrollToBottom();
+//
+//            if (action.equals(BluetoothDevice.ACTION_FOUND)){
+//                BluetoothDevice device = intent.getParcelableExtra (BluetoothDevice.EXTRA_DEVICE);
+//                mBTDevices.add(device);
+//                logView.append("onReceive: " + device.getName() + ": " + device.getAddress()+"\n");
+//                scrollToBottom();
+//                mDeviceListAdapter = new DeviceListAdapter(context, R.layout.device_adapter_view, mBTDevices);
+//                lvNewDevices.setAdapter(mDeviceListAdapter);
+//            }
+//        }
+//    };
+//
+//    private BroadcastReceiver mBroadcastReceiver4 = new BroadcastReceiver() {
+//        @Override
+//        public void onReceive(Context context, Intent intent) {
+//             final String action = intent.getAction();
+//
+//             logView = (TextView)findViewById(R.id.logText);
+//             logScroll = (ScrollView) findViewById(R.id.ScrollPane);
+//
+//             if(action.equals(BluetoothDevice.ACTION_BOND_STATE_CHANGED)){
+//                 BluetoothDevice mDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+//
+//                 if(mDevice.getBondState()== BluetoothDevice.BOND_BONDED){
+//                    logView.append("Device Bonded. \n");
+//                    scrollToBottom();
+//
+//                    mBTDevice = mDevice;
+//                 }
+//                 if(mDevice.getBondState()==BluetoothDevice.BOND_BONDING){
+//                     logView.append("Device bonding. \n");
+//                     scrollToBottom();
+//                 }
+//                 if(mDevice.getBondState()== BluetoothDevice.BOND_NONE){
+//                    logView.append("BOND_None. \n");
+//                    scrollToBottom();
+//                 }
+//             }
+//        }
+//    };
 
-            logView = (TextView)findViewById(R.id.logText);
-            logScroll = (ScrollView) findViewById(R.id.ScrollPane);
-
-            logView.append("onReceive: ACTION FOUND.\n");
-            scrollToBottom();
-
-            if (action.equals(BluetoothDevice.ACTION_FOUND)){
-                BluetoothDevice device = intent.getParcelableExtra (BluetoothDevice.EXTRA_DEVICE);
-                mBTDevices.add(device);
-                logView.append("onReceive: " + device.getName() + ": " + device.getAddress()+"\n");
-                scrollToBottom();
-                mDeviceListAdapter = new DeviceListAdapter(context, R.layout.device_adapter_view, mBTDevices);
-                lvNewDevices.setAdapter(mDeviceListAdapter);
-            }
-        }
-    };
-
-    private BroadcastReceiver mBroadcastReceiver4 = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-             final String action = intent.getAction();
-
-             logView = (TextView)findViewById(R.id.logText);
-             logScroll = (ScrollView) findViewById(R.id.ScrollPane);
-
-             if(action.equals(BluetoothDevice.ACTION_BOND_STATE_CHANGED)){
-                 BluetoothDevice mDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-
-                 if(mDevice.getBondState()== BluetoothDevice.BOND_BONDED){
-                    logView.append("Device Bonded. \n");
-                    scrollToBottom();
-
-                    mBTDevice = mDevice;
-                 }
-                 if(mDevice.getBondState()==BluetoothDevice.BOND_BONDING){
-                     logView.append("Device bonding. \n");
-                     scrollToBottom();
-                 }
-                 if(mDevice.getBondState()== BluetoothDevice.BOND_NONE){
-                    logView.append("BOND_None. \n");
-                    scrollToBottom();
-                 }
-             }
-        }
-    };
 
 
-
-    public final void enableDisableBT(){
-        if(mBluetoothAdapter== null){
-            Log.d(TAG, "enableDisableBT: Does not have bluetooth capabilities");
-        }
-        if(!mBluetoothAdapter.enable()){
-            Intent enableBTIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivity(enableBTIntent);
-
-            IntentFilter BTIntent = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
-            registerReceiver(mBroadcastReceiver1, BTIntent);
-        }
-        if(mBluetoothAdapter.enable()){
-            mBluetoothAdapter.disable();
-
-            IntentFilter BTIntent = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
-            registerReceiver(mBroadcastReceiver1, BTIntent);
-        }
-    }
+//    public final void enableDisableBT(){
+//        if(mBluetoothAdapter== null){
+//            Log.d(TAG, "enableDisableBT: Does not have bluetooth capabilities");
+//        }
+//        if(!mBluetoothAdapter.enable()){
+//            Intent enableBTIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+//            startActivity(enableBTIntent);
+//
+//            IntentFilter BTIntent = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+//            registerReceiver(mBroadcastReceiver1, BTIntent);
+//        }
+//        if(mBluetoothAdapter.enable()){
+//            mBluetoothAdapter.disable();
+//
+//            IntentFilter BTIntent = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+//            registerReceiver(mBroadcastReceiver1, BTIntent);
+//        }
+//    }
 
 
 
@@ -207,17 +204,12 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        lvNewDevices = (ListView) findViewById(R.id.lvNewDevices);
-        mBTDevices = new ArrayList<>();
-
-        view = (TextView)findViewById(R.id.view);
-        this.gestureDetector = new GestureDetectorCompat(this, this);
-        gestureDetector.setOnDoubleTapListener(this);
-
+//        lvNewDevices = (ListView) findViewById(R.id.lvNewDevices);
+//        mBTDevices = new ArrayList<>();
         btnStartConnection = (Button) findViewById(R.id.btnStartConn);
-        btnSend = (Button) findViewById(R.id.btnSend);
-
-        etSend = (EditText) findViewById(R.id.etSend);
+//        btnSend = (Button) findViewById(R.id.btnSend);
+//
+//        etSend = (EditText) findViewById(R.id.etSend);
 
         logView = (TextView)findViewById(R.id.logText);
         logScroll = (ScrollView) findViewById(R.id.ScrollPane);
@@ -232,56 +224,30 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
         });
 
 
-        Button logButton = (Button)findViewById(R.id.logButton);
-
-        logButton.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
-
-                if(view.getText()==getResources().getString(R.string.state_two)) {
-                    view.setText(R.string.state_one);
-                }else {
-                    view.setText(R.string.state_two);
-                }
-            }
-        });
-
-        logButton.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                //TextView view = (TextView)findViewById(R.id.view);
-
-                view.setText(R.string.home_longpress);
-                return true;
-            }
-        });
-
-        lvNewDevices.setOnItemClickListener(MainActivity.this);
+//        lvNewDevices.setOnItemClickListener(MainActivity.this);
 
 
 
 //Bluetooth Code Below
 
-        Button btnONOFF = (Button) findViewById(R.id.btnONOFF);
+        //Button btnONOFF = (Button) findViewById(R.id.btnONOFF);
 
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
-
-        btnONOFF.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, "onClick: enabling/disabling bluetooth.");
-                enableDisableBT();
-            }
-        });
+//
+//        btnONOFF.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Log.d(TAG, "onClick: enabling/disabling bluetooth.");
+////                enableDisableBT();
+//            }
+//        });
 
 
         //Broadcast receiver for bond state change.
-
-        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
-        registerReceiver(mBroadcastReceiver4, filter);
+//
+//        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
+//        registerReceiver(mBroadcastReceiver4, filter);
 
         btnStartConnection.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -291,12 +257,11 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
 
                 if (deviceFound){
 
-                    startConnection();
 
-                    Context context = getApplicationContext();
-                    String text = "Successfully Connected to Device.";
-                    Toast toast = Toast.makeText(context, text, Toast.LENGTH_SHORT);
-                    toast.show();
+                    //startConnection();
+                    Intent i = new Intent(MainActivity.this, ControlActivity.class);
+                    startActivity(i);
+
                 }else{
 
                     Context context = getApplicationContext();
@@ -307,34 +272,7 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
             }
         });
 
-        btnSend.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                byte[] bytes = etSend.getText().toString().getBytes(Charset.defaultCharset());
-                String s = etSend.getText().toString();
-
-
-                mBluetoothConnection.write(bytes);
-
-                logView.append("Sending Message: "+ s +"\n");
-                scrollToBottom();
-
-                etSend.setText("");
-            }
-        });
-
-        LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, new IntentFilter("incomingMessage"));
     }
-
-    BroadcastReceiver mReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String text = intent.getStringExtra("theMessage");
-
-            logView.append("Incoming Message: "+ text+"\n");
-            scrollToBottom();
-        }
-    };
 
     public void startConnection(){
         startBTConnection(mBTDevice, MY_UUID_INSECURE);
@@ -345,67 +283,20 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
     public void startBTConnection(BluetoothDevice device, UUID uuid){
         Log.d(TAG, "startBTConnection: Initializing RFCOM Bluetooth Connection.");
 
+
+        mBluetoothConnection = new BluetoothConnectionService(MainActivity.this);
+
+        
         mBluetoothConnection.startClient(device,uuid);
+
+        Log.d(TAG, "startBTConnection:RFCOM Bluetooth Connection.");
+        Context context = getApplicationContext();
+        String text = "Successfully Connected to Device.";
+        Toast toast = Toast.makeText(context, text, Toast.LENGTH_SHORT);
+        toast.show();
+
     }
 
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-
-        this.gestureDetector.onTouchEvent(event);
-        return super.onTouchEvent(event);
-    }
-
-    @Override
-    public boolean onSingleTapConfirmed(MotionEvent e) {
-        view.setText("Single tap Confirmed");
-        return true;
-    }
-
-    @Override
-    public boolean onDoubleTap(MotionEvent e) {
-        view.setText("Double tap");
-        return true;
-    }
-
-    @Override
-    public boolean onDoubleTapEvent(MotionEvent e) {
-        view.setText("Double Tap Event");
-        return true;
-    }
-
-    @Override
-    public boolean onDown(MotionEvent e) {
-        view.setText("Down");
-        return true;
-    }
-
-    @Override
-    public void onShowPress(MotionEvent e) {
-        view.setText("Show Press");
-    }
-
-    @Override
-    public boolean onSingleTapUp(MotionEvent e) {
-        view.setText("Single Tap UP");
-        return true;
-    }
-
-    @Override
-    public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-        view.setText("Scroll");
-        return true;
-    }
-
-    @Override
-    public void onLongPress(MotionEvent e) {
-        view.setText("Long Press");
-    }
-
-    @Override
-    public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-        view.setText("Fling");
-        return true;
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -434,92 +325,69 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
         Log.d(TAG, "onDestroy: called.");
 
         unregisterReceiver(mBroadcastReceiver1);
-        unregisterReceiver(mBroadcastReceiver3);
-        unregisterReceiver(mBroadcastReceiver4);
+//        unregisterReceiver(mBroadcastReceiver3);
+//        unregisterReceiver(mBroadcastReceiver4);
 
-        mBluetoothAdapter.cancelDiscovery();
+//        mBluetoothAdapter.cancelDiscovery();
         super.onDestroy();
     }
 
-    public void btnDiscover(View view) {
+//    public void btnDiscover(View view) {
+//
+//
+//        logView = (TextView)findViewById(R.id.logText);
+//        logScroll = (ScrollView) findViewById(R.id.ScrollPane);
+//
+//        if(mBluetoothAdapter.getState()!=BluetoothAdapter.STATE_ON){
+//            logView.append("Please Turn on Bluetooth.\n");
+//            scrollToBottom();
+//        }else {
+//            logView.append("btnDiscover: Looking for unpaired devices.\n");
+//            scrollToBottom();
+//
+//            if (mBluetoothAdapter.isDiscovering()) {
+//                mBluetoothAdapter.cancelDiscovery();
+//                logView.append("btnDiscover: Canceling discovery.\n");
+//                scrollToBottom();
+//
+//                //check BT permissions in manifest
+//                checkBTPermissions();
+//
+//                mBluetoothAdapter.startDiscovery();
+//                IntentFilter discoverDevicesIntent = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+//                registerReceiver(mBroadcastReceiver3, discoverDevicesIntent);
+//                logView.append("Starting Discovery again.\n");
+//                scrollToBottom();
+//            }
+//            if (!mBluetoothAdapter.isDiscovering()) {
+//
+//                //check BT permissions in manifest
+//                checkBTPermissions();
+//
+//                mBluetoothAdapter.startDiscovery();
+//                IntentFilter discoverDevicesIntent = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+//                registerReceiver(mBroadcastReceiver3, discoverDevicesIntent);
+//            }
+//        }
+//    }
+//
+//    public void btnCancelDiscover(View view){
+//
+//        logView = (TextView)findViewById(R.id.logText);
+//        logScroll = (ScrollView) findViewById(R.id.ScrollPane);
+//
+//        if(mBluetoothAdapter.isDiscovering()){
+//            mBluetoothAdapter.cancelDiscovery();
+//            logView.append("Cancelled Discovery");
+//            scrollToBottom();
+//        }
+//    }
 
-
-        logView = (TextView)findViewById(R.id.logText);
-        logScroll = (ScrollView) findViewById(R.id.ScrollPane);
-
-        if(mBluetoothAdapter.getState()!=BluetoothAdapter.STATE_ON){
-            logView.append("Please Turn on Bluetooth.\n");
-            scrollToBottom();
-        }else {
-            logView.append("btnDiscover: Looking for unpaired devices.\n");
-            scrollToBottom();
-
-            if (mBluetoothAdapter.isDiscovering()) {
-                mBluetoothAdapter.cancelDiscovery();
-                logView.append("btnDiscover: Canceling discovery.\n");
-                scrollToBottom();
-
-                //check BT permissions in manifest
-                checkBTPermissions();
-
-                mBluetoothAdapter.startDiscovery();
-                IntentFilter discoverDevicesIntent = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-                registerReceiver(mBroadcastReceiver3, discoverDevicesIntent);
-                logView.append("Starting Discovery again.\n");
-                scrollToBottom();
-            }
-            if (!mBluetoothAdapter.isDiscovering()) {
-
-                //check BT permissions in manifest
-                checkBTPermissions();
-
-                mBluetoothAdapter.startDiscovery();
-                IntentFilter discoverDevicesIntent = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-                registerReceiver(mBroadcastReceiver3, discoverDevicesIntent);
-            }
-        }
+    public void btnPairActivity(View view){
+        Intent i = new Intent(this, PairActivity.class);
+        startActivity(i);
     }
 
-    public void btnCancelDiscover(View view){
-
-        logView = (TextView)findViewById(R.id.logText);
-        logScroll = (ScrollView) findViewById(R.id.ScrollPane);
-
-        if(mBluetoothAdapter.isDiscovering()){
-            mBluetoothAdapter.cancelDiscovery();
-            logView.append("Cancelled Discovery");
-            scrollToBottom();
-        }
-    }
-
-    public void leftClick(View view){
-
-        logView = (TextView)findViewById(R.id.logText);
-        logScroll = (ScrollView) findViewById(R.id.ScrollPane);
-
-        String x = "3";
-        byte[] bytes = x.getBytes(Charset.defaultCharset());
-
-        mBluetoothConnection.write(bytes);
-
-        logView.append("Sending Message: "+ x +"\n");
-        scrollToBottom();
-
-    }
-
-    public void rightClick(View view){
-
-        logView = (TextView)findViewById(R.id.logText);
-        logScroll = (ScrollView) findViewById(R.id.ScrollPane);
-
-        String x = "4";
-        byte[] bytes = x.getBytes(Charset.defaultCharset());
-
-        mBluetoothConnection.write(bytes);
-        logView.append("Sending Message: "+ x +"\n");
-        scrollToBottom();
-
-    }
     /**
      * This method is required for all devices running API23+
      * Android must programmatically check the permissions for bluetooth. Putting the proper permissions
@@ -540,35 +408,35 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
         }
     }
 
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-
-        logView = (TextView)findViewById(R.id.logText);
-        logScroll = (ScrollView) findViewById(R.id.ScrollPane);
-
-        mBluetoothAdapter.cancelDiscovery();
-        String deviceName = mBTDevices.get(position).getName();
-        String deviceAddress = mBTDevices.get(position).getAddress();
-
-        logView.append("Device Selected. \n");
-        scrollToBottom();
-        logView.append("Device Name: "+ deviceName+"\n");
-        scrollToBottom();
-        logView.append("Device Address: " + deviceAddress+ "\n");
-        scrollToBottom();
-
-        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2){
-            logView.append("Trying to Pair with Device: "+deviceName+"\n");
-            scrollToBottom();
-            mBTDevices.get(position).createBond();
-
-            mBTDevice = mBTDevices.get(position);
-
-            mBluetoothConnection = new BluetoothConnectionService(MainActivity.this);
-
-        }
-    }
+//    @Override
+//    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//
+//
+//        logView = (TextView)findViewById(R.id.logText);
+//        logScroll = (ScrollView) findViewById(R.id.ScrollPane);
+//
+//        mBluetoothAdapter.cancelDiscovery();
+//        String deviceName = mBTDevices.get(position).getName();
+//        String deviceAddress = mBTDevices.get(position).getAddress();
+//
+//        logView.append("Device Selected. \n");
+//        scrollToBottom();
+//        logView.append("Device Name: "+ deviceName+"\n");
+//        scrollToBottom();
+//        logView.append("Device Address: " + deviceAddress+ "\n");
+//        scrollToBottom();
+//
+//        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2){
+//            logView.append("Trying to Pair with Device: "+deviceName+"\n");
+//            scrollToBottom();
+//            mBTDevices.get(position).createBond();
+//
+//            mBTDevice = mBTDevices.get(position);
+//
+//            mBluetoothConnection = new BluetoothConnectionService(MainActivity.this);
+//
+//        }
+//    }
 
     private void findDevice() {
         Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
@@ -583,6 +451,12 @@ public class MainActivity extends AppCompatActivity implements GestureDetector.O
                     break;
                 }
             }
+        }
+        if(!deviceFound){
+            Context context = getApplicationContext();
+            String text = "Please Pair Device First.";
+            Toast toast = Toast.makeText(context, text, Toast.LENGTH_LONG);
+            toast.show();
         }
 
     }

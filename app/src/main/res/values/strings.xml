@@ -8,5 +8,9 @@
     <string name="pass">Password</string>
     <string name="log_button">Switch State</string>
     <string name="btnONOFF">BT On/Off</string>
+    <string name="title_activity_pair">PairActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="title_activity_control">ControlActivity</string>
 
 </resources>

@@ -138,7 +138,6 @@ public class BluetoothConnectionService {
 
             mmSocket = tmp;
 
-            // Always cancel discovery because it will slow down a connection
             mBluetoothAdapter.cancelDiscovery();
 
             // Make a connection to the BluetoothSocket
@@ -160,7 +159,6 @@ public class BluetoothConnectionService {
                 Log.d(TAG, "run: ConnectThread: Could not connect to UUID: " + MY_UUID_INSECURE );
             }
 
-            //will talk about this in the 3rd video
             connected(mmSocket,mmDevice);
         }
         public void cancel() {
@@ -254,8 +252,10 @@ public class BluetoothConnectionService {
             while (true) {
                 // Read from the InputStream
                 try {
+
                     bytes = mmInStream.read(buffer);
                     String incomingMessage = new String(buffer, 0, bytes);
+
                     Log.d(TAG, "InputStream: " + incomingMessage);
 
                     Intent incomingMessageIntent = new Intent("incomingMessage");
