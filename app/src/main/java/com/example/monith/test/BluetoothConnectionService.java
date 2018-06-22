@@ -6,8 +6,6 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
-import android.content.Intent;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import java.io.IOException;
@@ -17,7 +15,7 @@ import java.nio.charset.Charset;
 import java.util.UUID;
 
 /**
- * Created by Monith on 5/7/2018.
+ * Created by Monith on 06/10/2018
  */
 
 public class BluetoothConnectionService {
@@ -26,17 +24,17 @@ public class BluetoothConnectionService {
     private static final String appName = "MYAPP";
 
     private static final UUID MY_UUID_INSECURE =
-            UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+            UUID.fromString("8ce255c0-200a-11e0-ac64-0800200c9a66");
 
     private final BluetoothAdapter mBluetoothAdapter;
-    private final Context mContext;
+    Context mContext;
 
     private AcceptThread mInsecureAcceptThread;
 
     private ConnectThread mConnectThread;
     private BluetoothDevice mmDevice;
     private UUID deviceUUID;
-    private ProgressDialog mProgressDialog;
+    ProgressDialog mProgressDialog;
 
     private ConnectedThread mConnectedThread;
 
@@ -57,7 +55,7 @@ public class BluetoothConnectionService {
         // The local server socket
         private final BluetoothServerSocket mmServerSocket;
 
-         AcceptThread(){
+        public AcceptThread(){
             BluetoothServerSocket tmp = null;
 
             // Create a new listening server socket
@@ -90,6 +88,7 @@ public class BluetoothConnectionService {
                 Log.e(TAG, "AcceptThread: IOException: " + e.getMessage() );
             }
 
+            //talk about this is in the 3rd
             if(socket != null){
                 connected(socket,mmDevice);
             }
@@ -138,6 +137,7 @@ public class BluetoothConnectionService {
 
             mmSocket = tmp;
 
+            // Always cancel discovery because it will slow down a connection
             mBluetoothAdapter.cancelDiscovery();
 
             // Make a connection to the BluetoothSocket
@@ -159,6 +159,7 @@ public class BluetoothConnectionService {
                 Log.d(TAG, "run: ConnectThread: Could not connect to UUID: " + MY_UUID_INSECURE );
             }
 
+            //will talk about this in the 3rd video
             connected(mmSocket,mmDevice);
         }
         public void cancel() {
@@ -224,7 +225,7 @@ public class BluetoothConnectionService {
             InputStream tmpIn = null;
             OutputStream tmpOut = null;
 
-            // ismiss the progressdialog when connection is established
+            //dismiss the progressdialog when connection is established
             try{
                 mProgressDialog.dismiss();
             }catch (NullPointerException e){
@@ -252,17 +253,9 @@ public class BluetoothConnectionService {
             while (true) {
                 // Read from the InputStream
                 try {
-
                     bytes = mmInStream.read(buffer);
                     String incomingMessage = new String(buffer, 0, bytes);
-
                     Log.d(TAG, "InputStream: " + incomingMessage);
-
-                    Intent incomingMessageIntent = new Intent("incomingMessage");
-                    incomingMessageIntent.putExtra("theMessage", incomingMessage);
-
-                    LocalBroadcastManager.getInstance(mContext).sendBroadcast(incomingMessageIntent);
-
                 } catch (IOException e) {
                     Log.e(TAG, "write: Error reading Input Stream. " + e.getMessage() );
                     break;

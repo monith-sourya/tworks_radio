@@ -36,6 +36,7 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.UUID;
 import com.example.monith.test.BluetoothConnectionService;
+//import com.agilie.volumecontrol.animation.controller.ControllerImpl;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -174,6 +175,19 @@ public class MainActivity extends AppCompatActivity {
 //    };
 
 
+    BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if(action.equals("finish")){
+                finish();
+            }
+        }
+    };
+
+//    registerReceiver(broadcastReceiver, new IntentFilter("finish"));
+
+    //    registerReceiver(broadcast_reciever, new IntentFilter("finish"));
 
 //    public final void enableDisableBT(){
 //        if(mBluetoothAdapter== null){
@@ -194,10 +208,7 @@ public class MainActivity extends AppCompatActivity {
 //        }
 //    }
 
-
-
     //Bluetooth Functions End
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -214,19 +225,20 @@ public class MainActivity extends AppCompatActivity {
         logView = (TextView)findViewById(R.id.logText);
         logScroll = (ScrollView) findViewById(R.id.ScrollPane);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+//        fab.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+//            }
+//        });
 
 
 //        lvNewDevices.setOnItemClickListener(MainActivity.this);
 
 
+        registerReceiver(broadcastReceiver, new IntentFilter("finish"));
 
 //Bluetooth Code Below
 
@@ -252,22 +264,23 @@ public class MainActivity extends AppCompatActivity {
         btnStartConnection.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                findDevice();
 
+                if (mBluetoothAdapter.getState()==BluetoothAdapter.STATE_ON) {
+                    findDevice();
+                    if (deviceFound){
+                        //startConnection();
+                        Intent i = new Intent(MainActivity.this, ControlActivity.class);
+                        startActivity(i);
 
-                if (deviceFound){
+                    }else{
 
-
-                    //startConnection();
-                    Intent i = new Intent(MainActivity.this, ControlActivity.class);
-                    startActivity(i);
-
-                }else{
-
-                    Context context = getApplicationContext();
-                    String text = "Device Not Found in Paired List.";
-                    Toast toast = Toast.makeText(context, text, Toast.LENGTH_LONG);
-                    toast.show();
+                        Context context = getApplicationContext();
+                        String text = "Device Not Found in Paired List.";
+                        Toast toast = Toast.makeText(context, text, Toast.LENGTH_LONG);
+                        toast.show();
+                    }
+                } else {
+                    Toast.makeText(getApplicationContext(),"Please Turn on Bluetooth", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -327,6 +340,7 @@ public class MainActivity extends AppCompatActivity {
         unregisterReceiver(mBroadcastReceiver1);
 //        unregisterReceiver(mBroadcastReceiver3);
 //        unregisterReceiver(mBroadcastReceiver4);
+        unregisterReceiver(broadcastReceiver);
 
 //        mBluetoothAdapter.cancelDiscovery();
         super.onDestroy();

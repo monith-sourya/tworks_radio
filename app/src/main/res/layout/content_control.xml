@@ -14,8 +14,6 @@
         android:layout_height="44dp"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:text="Start Connection"
@@ -23,14 +21,13 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.039" />
+        app:layout_constraintVertical_bias="0.0" />
 
     <EditText
         android:id="@+id/etSend"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:layout_marginLeft="16dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
         android:ems="10"
@@ -39,7 +36,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.879" />
+        app:layout_constraintVertical_bias="0.962" />
 
     <Button
         android:id="@+id/btnSend"
@@ -47,8 +44,6 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:text="Send"
@@ -57,20 +52,19 @@
         app:layout_constraintHorizontal_bias="0.892"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.882" />
+        app:layout_constraintVertical_bias="0.961" />
 
 
     <SeekBar
-        android:id="@+id/seekBar3"
+        android:id="@+id/seekBarVol"
         android:layout_width="230dp"
         android:layout_height="48dp"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:max="100"
+        android:max="99"
+        android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@+id/etSend"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -109,22 +103,24 @@
 
     <LinearLayout
         android:id="@+id/linearLayout2"
-        android:layout_width="387dp"
-        android:layout_height="99dp"
-        android:gravity="fill"
+
+        android:layout_width="wrap_content"
+        android:layout_height="106dp"
         android:orientation="horizontal"
-        tools:layout_editor_absoluteY="206dp">
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout">
 
         <Button
             android:id="@+id/leftButton"
             android:layout_width="0dp"
             android:layout_height="99dp"
             android:layout_gravity="left"
-            android:layout_marginBottom="228dp"
-            android:layout_marginLeft="84dp"
-            android:layout_marginStart="84dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            android:layout_weight="2"
+            android:layout_weight="1"
             android:onClick="leftClick"
             android:text="L" />
 
@@ -133,15 +129,27 @@
             android:layout_width="0dp"
             android:layout_height="99dp"
             android:layout_gravity="left"
-            android:layout_marginBottom="244dp"
+            android:layout_marginBottom="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            android:layout_weight="2"
+            android:layout_weight="1"
             android:onClick="rightClick"
             android:text="R" />
+
     </LinearLayout>
+
+    <com.agilie.volumecontrol.view.VolumeControlView
+        android:id="@+id/controllerView"
+        android:layout_width="wrap_content"
+        android:layout_height="153dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout2"/>
 
 </android.support.constraint.ConstraintLayout>

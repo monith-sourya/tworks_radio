@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -16,15 +17,23 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ScrollView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.nio.charset.Charset;
 import java.util.Set;
 import java.util.UUID;
+import com.agilie.volumecontrol.animation.controller.ControllerImpl;
+
+//import com.agilie.volomecontrolview.R.id.controllerView;
+import com.agilie.volumecontrol.view.VolumeControlView;
+
+//import com.agilie.controller.R.id.value
 
 public class ControlActivity extends AppCompatActivity {
 
@@ -59,22 +68,26 @@ public class ControlActivity extends AppCompatActivity {
         });
     }
 
+
+    SeekBar seekBar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_control);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+//        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+//        setSupportActionBar(toolbar);
+//
+//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+//        fab.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+//            }
+//        });
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
-
+//        requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         btnStartConnection = (Button) findViewById(R.id.btnStartConn);
         btnSend = (Button) findViewById(R.id.btnSend);
@@ -84,6 +97,7 @@ public class ControlActivity extends AppCompatActivity {
         logView = (TextView)findViewById(R.id.logTextControl);
         logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
 
+        seekBar= (SeekBar)findViewById(R.id.seekBarVol);
 
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -125,7 +139,86 @@ public class ControlActivity extends AppCompatActivity {
             }
         });
 
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress,
+                                          boolean fromUser) {
+                //Toast.makeText(getApplicationContext(),"seekbar progress: "+progress, Toast.LENGTH_SHORT).show();
+
+                logView = (TextView)findViewById(R.id.logTextControl);
+                logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
+
+//                String x = ;
+//                byte[] bytes = x.getBytes(Charset.defaultCharset());
+
+                byte[] bytes = toByteArray(progress);
+                //mBluetoothConnection.write(bytes);
+
+                logView.append("Sending Message: "+ progress +"\n");
+                scrollToBottom();
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                Toast.makeText(getApplicationContext(),"seekbar touch started!", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                Toast.makeText(getApplicationContext(),"seekbar touch stopped!", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        initController();
+
         LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, new IntentFilter("incomingMessage"));
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
+        filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED);
+        filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+        this.registerReceiver(mReceiver1, filter);
+
+        //IMPORTANT
+        //startConnection();
+
+    }
+
+    private void initController(){
+//        ControllerImpl controllerView = (ControllerImpl) findViewById(R.id.controllerView);
+
+        VolumeControlView controllerView = (VolumeControlView) findViewById(R.id.controllerView);
+
+        //controllerView.setBackgroundShiningImpl(Color.BLACK);
+
+//        controllerView.setController(new ControllerImpl());
+        controllerView.getController().setOnTouchControllerListener( new ControllerImpl.OnTouchControllerListener(){
+            @Override
+            public void onControllerDown(int angle, int percent){
+
+            }
+
+            @Override
+            public void onControllerMove(int angle, int percent){
+
+            }
+
+            @Override
+            public void onAngleChange(int angle, int percent){
+                logView = (TextView)findViewById(R.id.logTextControl);
+                logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
+
+//                String x = ;
+//                byte[] bytes = x.getBytes(Charset.defaultCharset());
+
+                byte[] bytes = toByteArray(percent);
+                //mBluetoothConnection.write(bytes);
+
+                logView.append("Sending Message: "+ percent + " " + angle +"\n");
+                scrollToBottom();
+            }
+        });
+
     }
     BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
@@ -134,6 +227,43 @@ public class ControlActivity extends AppCompatActivity {
 
             logView.append("Incoming Message: "+ text+"\n");
             scrollToBottom();
+        }
+    };
+
+    //The BroadcastReceiver that listens for bluetooth broadcasts
+    private final BroadcastReceiver mReceiver1 = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+
+            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+            //Device found
+
+                Toast.makeText(getApplicationContext(),"Device Found!", Toast.LENGTH_SHORT).show();
+            }
+            else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
+            //
+
+                Toast.makeText(getApplicationContext(),"Device Successfully Connected", Toast.LENGTH_SHORT).show();
+                Intent i = new Intent("finish");
+                sendBroadcast(i);
+
+            }
+            else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
+
+                Toast.makeText(getApplicationContext(), "Device Not Found!", Toast.LENGTH_LONG).show();
+
+                Intent i = new Intent(ControlActivity.this, MainActivity.class);
+                startActivity(i);
+                finish();
+            }
+            else if (BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED.equals(action)) {
+            //Device is about to disconnect
+            }
+            else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
+            //Device has disconnected
+            }
         }
     };
 
@@ -153,10 +283,10 @@ public class ControlActivity extends AppCompatActivity {
         mBluetoothConnection.startClient(device,uuid);
 
         Log.d(TAG, "startBTConnection:RFCOM Bluetooth Connection.");
-        Context context = getApplicationContext();
-        String text = "Successfully Connected to Device.";
-        Toast toast = Toast.makeText(context, text, Toast.LENGTH_SHORT);
-        toast.show();
+//        Context context = getApplicationContext();
+//        String text = "Successfully Connected to Device.";
+//        Toast toast = Toast.makeText(context, text, Toast.LENGTH_SHORT);
+//        toast.show();
 
     }
 
@@ -165,6 +295,7 @@ public class ControlActivity extends AppCompatActivity {
         Log.d(TAG, "onDestroy: called.");
 
         unregisterReceiver(mReceiver);
+        unregisterReceiver(mReceiver1);
 
         super.onDestroy();
     }
@@ -242,4 +373,13 @@ public class ControlActivity extends AppCompatActivity {
         }
 
     }
+
+    public byte[] toByteArray(int value) {
+        return new byte[] {
+                (byte)(value >> 24),
+                (byte)(value >> 16),
+                (byte)(value >> 8),
+                (byte)value};
+    }
+
 }
