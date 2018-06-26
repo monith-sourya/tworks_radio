@@ -6,10 +6,14 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
+import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.UUID;
@@ -253,9 +257,28 @@ public class BluetoothConnectionService {
             while (true) {
                 // Read from the InputStream
                 try {
-                    bytes = mmInStream.read(buffer);
-                    String incomingMessage = new String(buffer, 0, bytes);
+//                    bytes = mmInStream.read(buffer);
+//                    String incomingMessage = new String(buffer, 0, bytes);
+//                    Log.d(TAG, "InputStream: " + incomingMessage);
+//
+//                    Intent incomingMessageIntent = new Intent("incomingMessage");
+//                    incomingMessageIntent.putExtra("theMessage", incomingMessage);
+//
+//                    LocalBroadcastManager.getInstance(mContext).sendBroadcast(incomingMessageIntent);
+
+                    BufferedReader br = new BufferedReader(new InputStreamReader(mmInStream, "UTF-8"));
+                    String incomingMessage;
+                    while ((incomingMessage = br.readLine()) != null)
+                    {
+
                     Log.d(TAG, "InputStream: " + incomingMessage);
+
+                    Intent incomingMessageIntent = new Intent("incomingMessage");
+                    incomingMessageIntent.putExtra("theMessage", incomingMessage);
+
+                    LocalBroadcastManager.getInstance(mContext).sendBroadcast(incomingMessageIntent);
+
+                    }
                 } catch (IOException e) {
                     Log.e(TAG, "write: Error reading Input Stream. " + e.getMessage() );
                     break;

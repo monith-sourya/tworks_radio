@@ -49,7 +49,7 @@ public class ControlActivity extends AppCompatActivity {
     private EditText etSend;
 
     private boolean deviceFound;
-    private static final String DEVICE_NAME = "HC-05";
+    private static final String DEVICE_NAME = "RADIO001";
 
     BluetoothConnectionService mBluetoothConnection;
 
@@ -210,11 +210,16 @@ public class ControlActivity extends AppCompatActivity {
 
 //                String x = ;
 //                byte[] bytes = x.getBytes(Charset.defaultCharset());
+                percent/=2;
 
                 byte[] bytes = toByteArray(percent);
-                //mBluetoothConnection.write(bytes);
 
-                logView.append("Sending Message: "+ percent + " " + angle +"\n");
+                if(percent!=0) {
+                    mBluetoothConnection.write(bytes);
+                }
+
+                logView.append("Sending Message: "+ percent +"\n");
+//                logView.append("In Bytes: "+ bytes+"\n");
                 scrollToBottom();
             }
         });
@@ -225,7 +230,17 @@ public class ControlActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             String text = intent.getStringExtra("theMessage");
 
-            logView.append("Incoming Message: "+ text+"\n");
+
+            logView.append("Incoming Message: " + text);
+//            scrollToBottom();
+
+            int incoming = Integer.parseInt(text);
+            logView.append(Integer.toString(incoming));
+//            if(text!="0\n") {
+//                logView.append(incoming);
+////                scrollToBottom();
+//            }
+            logView.append("\n");
             scrollToBottom();
         }
     };
@@ -246,17 +261,17 @@ public class ControlActivity extends AppCompatActivity {
             //
 
                 Toast.makeText(getApplicationContext(),"Device Successfully Connected", Toast.LENGTH_SHORT).show();
-                Intent i = new Intent("finish");
-                sendBroadcast(i);
+//                Intent i = new Intent("finish");
+//                sendBroadcast(i);
 
             }
             else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
 
                 Toast.makeText(getApplicationContext(), "Device Not Found!", Toast.LENGTH_LONG).show();
-
-                Intent i = new Intent(ControlActivity.this, MainActivity.class);
-                startActivity(i);
-                finish();
+//
+//                Intent i = new Intent(ControlActivity.this, MainActivity.class);
+//                startActivity(i);
+//                finish();
             }
             else if (BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED.equals(action)) {
             //Device is about to disconnect
@@ -283,10 +298,10 @@ public class ControlActivity extends AppCompatActivity {
         mBluetoothConnection.startClient(device,uuid);
 
         Log.d(TAG, "startBTConnection:RFCOM Bluetooth Connection.");
-//        Context context = getApplicationContext();
-//        String text = "Successfully Connected to Device.";
-//        Toast toast = Toast.makeText(context, text, Toast.LENGTH_SHORT);
-//        toast.show();
+        Context context = getApplicationContext();
+        String text = "Successfully Connected to Device.";
+        Toast toast = Toast.makeText(context, text, Toast.LENGTH_SHORT);
+        toast.show();
 
     }
 
@@ -306,7 +321,7 @@ public class ControlActivity extends AppCompatActivity {
         logView = (TextView)findViewById(R.id.logTextControl);
         logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
 
-        String x = "4";
+        String x = "e";
         byte[] bytes = x.getBytes(Charset.defaultCharset());
 
         mBluetoothConnection.write(bytes);
@@ -321,7 +336,7 @@ public class ControlActivity extends AppCompatActivity {
         logView = (TextView)findViewById(R.id.logTextControl);
         logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
 
-        String x = "3";
+        String x = "f";
         byte[] bytes = x.getBytes(Charset.defaultCharset());
 
         mBluetoothConnection.write(bytes);

@@ -21,6 +21,7 @@ import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -52,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
     private Button btnStartConnection;
 
     private boolean deviceFound;
-    private static final String DEVICE_NAME = "HC-05";
+    private static final String DEVICE_NAME = "RADIO001";
 
 //    public ArrayList<BluetoothDevice> mBTDevices = new ArrayList<>();
 //    public DeviceListAdapter mDeviceListAdapter;
@@ -285,6 +286,17 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        ImageView right;
+
+        right= (ImageView) findViewById(R.id.rightArrowImage);
+
+        right.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                logView.append("Clicked");
+                scrollToBottom();
+            }
+        });
     }
 
     public void startConnection(){

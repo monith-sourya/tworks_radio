@@ -113,6 +113,7 @@
 
         <Button
             android:id="@+id/leftButton"
+            style="@style/Base.Widget.AppCompat.DrawerArrowToggle"
             android:layout_width="0dp"
             android:layout_height="99dp"
             android:layout_gravity="left"
@@ -121,8 +122,9 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:layout_weight="1"
+            android:background="@drawable/left_arrow"
             android:onClick="leftClick"
-            android:text="L" />
+            />
 
         <Button
             android:id="@+id/rightButton"
@@ -136,20 +138,21 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:layout_weight="1"
+            android:background="@drawable/ic_double_angle_pointing_to_right"
             android:onClick="rightClick"
-            android:text="R" />
+            />
 
     </LinearLayout>
 
     <com.agilie.volumecontrol.view.VolumeControlView
         android:id="@+id/controllerView"
         android:layout_width="wrap_content"
-        android:layout_height="153dp"
+        android:layout_height="187dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout2"/>
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout2" />
 
 </android.support.constraint.ConstraintLayout>
