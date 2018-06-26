@@ -90,14 +90,14 @@ public class ControlActivity extends AppCompatActivity {
 //        requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         btnStartConnection = (Button) findViewById(R.id.btnStartConn);
-        btnSend = (Button) findViewById(R.id.btnSend);
+//        btnSend = (Button) findViewById(R.id.btnSend);
 
-        etSend = (EditText) findViewById(R.id.etSend);
+//        etSend = (EditText) findViewById(R.id.etSend);
 
         logView = (TextView)findViewById(R.id.logTextControl);
         logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
 
-        seekBar= (SeekBar)findViewById(R.id.seekBarVol);
+//        seekBar= (SeekBar)findViewById(R.id.seekBarVol);
 
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -123,51 +123,51 @@ public class ControlActivity extends AppCompatActivity {
             }
         });
 
-        btnSend.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                byte[] bytes = etSend.getText().toString().getBytes(Charset.defaultCharset());
-                String s = etSend.getText().toString();
+//        btnSend.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                byte[] bytes = etSend.getText().toString().getBytes(Charset.defaultCharset());
+//                String s = etSend.getText().toString();
+//
+//
+//                mBluetoothConnection.write(bytes);
+//
+//                logView.append("Sending Message: "+ s +"\n");
+//                scrollToBottom();
+//
+//                etSend.setText("");
+//            }
+//        });
 
-
-                mBluetoothConnection.write(bytes);
-
-                logView.append("Sending Message: "+ s +"\n");
-                scrollToBottom();
-
-                etSend.setText("");
-            }
-        });
-
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress,
-                                          boolean fromUser) {
-                //Toast.makeText(getApplicationContext(),"seekbar progress: "+progress, Toast.LENGTH_SHORT).show();
-
-                logView = (TextView)findViewById(R.id.logTextControl);
-                logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
-
-//                String x = ;
-//                byte[] bytes = x.getBytes(Charset.defaultCharset());
-
-                byte[] bytes = toByteArray(progress);
-                //mBluetoothConnection.write(bytes);
-
-                logView.append("Sending Message: "+ progress +"\n");
-                scrollToBottom();
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                Toast.makeText(getApplicationContext(),"seekbar touch started!", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                Toast.makeText(getApplicationContext(),"seekbar touch stopped!", Toast.LENGTH_SHORT).show();
-            }
-        });
+//        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+//            @Override
+//            public void onProgressChanged(SeekBar seekBar, int progress,
+//                                          boolean fromUser) {
+//                //Toast.makeText(getApplicationContext(),"seekbar progress: "+progress, Toast.LENGTH_SHORT).show();
+//
+//                logView = (TextView)findViewById(R.id.logTextControl);
+//                logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
+//
+////                String x = ;
+////                byte[] bytes = x.getBytes(Charset.defaultCharset());
+//
+//                byte[] bytes = toByteArray(progress);
+//                //mBluetoothConnection.write(bytes);
+//
+//                logView.append("Sending Message: "+ progress +"\n");
+//                scrollToBottom();
+//            }
+//
+//            @Override
+//            public void onStartTrackingTouch(SeekBar seekBar) {
+//                Toast.makeText(getApplicationContext(),"seekbar touch started!", Toast.LENGTH_SHORT).show();
+//            }
+//
+//            @Override
+//            public void onStopTrackingTouch(SeekBar seekBar) {
+//                Toast.makeText(getApplicationContext(),"seekbar touch stopped!", Toast.LENGTH_SHORT).show();
+//            }
+//        });
 
         initController();
 
@@ -234,8 +234,8 @@ public class ControlActivity extends AppCompatActivity {
             logView.append("Incoming Message: " + text);
 //            scrollToBottom();
 
-            int incoming = Integer.parseInt(text);
-            logView.append(Integer.toString(incoming));
+            float incoming = Float.parseFloat(text);
+//            logView.append(Float.toString(incoming));
 //            if(text!="0\n") {
 //                logView.append(incoming);
 ////                scrollToBottom();

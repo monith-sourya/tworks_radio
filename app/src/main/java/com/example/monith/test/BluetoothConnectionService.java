@@ -266,6 +266,8 @@ public class BluetoothConnectionService {
 //
 //                    LocalBroadcastManager.getInstance(mContext).sendBroadcast(incomingMessageIntent);
 
+
+
                     BufferedReader br = new BufferedReader(new InputStreamReader(mmInStream, "UTF-8"));
                     String incomingMessage;
                     while ((incomingMessage = br.readLine()) != null)
