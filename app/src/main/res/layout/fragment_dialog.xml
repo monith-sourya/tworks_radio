@@ -9,7 +9,7 @@
     <ListView
         android:id="@+id/list"
         android:layout_width="269dp"
-        android:layout_height="97dp"
+        android:layout_height="120dp"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
@@ -22,7 +22,7 @@
         android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Lorem ipsum dolor sit amet..."
+        android:text="Long Click to delete"
         android:textSize="20dp" />
 
     <Button

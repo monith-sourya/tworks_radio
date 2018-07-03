@@ -48,7 +48,7 @@ import java.util.Locale;
 
 
 
-public class ControlActivity extends AppCompatActivity {
+public class ControlActivity extends AppCompatActivity implements StationsDialogFragment.StationSelectedListener {
 
     private static final String TAG = "ControlActivity";
 
@@ -410,6 +410,22 @@ public class ControlActivity extends AppCompatActivity {
 
     }
 
+    public void saveClick(View view){
+        logView = (TextView)findViewById(R.id.logTextControl);
+        logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
+
+        final Context context = getApplicationContext();
+        String val = tvAngle.getText().toString();
+        Float frequency = Float.parseFloat(val);
+
+        addStation(context, frequency);
+
+        Toast.makeText(getApplicationContext(), String.format(Locale.US, "%.01f Saved", frequency), Toast.LENGTH_SHORT).show();
+
+        logView.append("Saved Station: "+ frequency +"\n");
+        scrollToBottom();
+    }
+
 //    /**
 //     * This method is required for all devices running API23+
 //     * Android must programmatically check the permissions for bluetooth. Putting the proper permissions
@@ -632,5 +648,17 @@ public class ControlActivity extends AppCompatActivity {
             return null;
 
         return (ArrayList<Float>) stations;
+    }
+
+    @Override
+    public void onStationClick(Float frequency) {
+
+        double fraction = (double)frequency;
+        fraction-=88;
+        fraction/=20;
+
+        horizontalWheelView.setCompleteTurnFraction(fraction);
+        writedata();
+        Toast.makeText(getApplicationContext(),"Activity received: "+frequency,Toast.LENGTH_LONG).show();
     }
 }

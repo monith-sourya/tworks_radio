@@ -33,6 +33,9 @@ public class StationsDialogFragment extends DialogFragment {
 
     ListView list ;
 
+    public interface StationSelectedListener{
+        void onStationClick(Float frequency);
+    }
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
@@ -40,8 +43,6 @@ public class StationsDialogFragment extends DialogFragment {
         getDialog().setTitle("Simple Dialog");
 
         final Context context = getActivity();
-
-        addStation(context, (float)100.00);
 
         final ArrayList<Float> values = getStations(context);
 
@@ -54,8 +55,11 @@ public class StationsDialogFragment extends DialogFragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
-                Toast.makeText(getActivity(), String.format("You Clicked at %s", values.get(position)), Toast.LENGTH_SHORT).show();
 
+                StationSelectedListener listener = (StationSelectedListener)getActivity();
+                listener.onStationClick(values.get(position));
+                Toast.makeText(getActivity(), String.format("You Clicked at %s", values.get(position)), Toast.LENGTH_SHORT).show();
+                dismiss();
             }
         });
 
