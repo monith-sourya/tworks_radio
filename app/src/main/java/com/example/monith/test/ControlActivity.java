@@ -1,12 +1,15 @@
 package com.example.monith.test;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.FragmentManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -16,6 +19,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
@@ -25,15 +29,24 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import com.agilie.volumecontrol.animation.controller.ControllerImpl;
-
 //import com.agilie.volomecontrolview.R.id.controllerView;
 import com.agilie.volumecontrol.view.VolumeControlView;
-
 //import com.agilie.controller.R.id.value
+import com.github.shchurov.horizontalwheelview.HorizontalWheelView;
+import com.google.gson.Gson;
+
+import java.util.Locale;
+
+
 
 public class ControlActivity extends AppCompatActivity {
 
@@ -69,56 +82,47 @@ public class ControlActivity extends AppCompatActivity {
     }
 
 
-    SeekBar seekBar;
+    private HorizontalWheelView horizontalWheelView;
+    private TextView tvAngle;
+
+    public static final String PREFS_NAME = "STATIONS_APP";
+    public static final String STATIONS = "saved_stations";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_control);
-//        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-//        setSupportActionBar(toolbar);
-//
-//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-//            }
-//        });
-
-//        requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         btnStartConnection = (Button) findViewById(R.id.btnStartConn);
-//        btnSend = (Button) findViewById(R.id.btnSend);
-
-//        etSend = (EditText) findViewById(R.id.etSend);
 
         logView = (TextView)findViewById(R.id.logTextControl);
         logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
 
-//        seekBar= (SeekBar)findViewById(R.id.seekBarVol);
-
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
         //startConnection();
+
+
 
         btnStartConnection.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 findDevice();
 
-                if (deviceFound){
-                    startConnection();
+                if (mBluetoothAdapter.getState()==BluetoothAdapter.STATE_ON) {
+                    if (deviceFound){
+                        startConnection();
 
-                    logView.append("Connection Started. \n");
-                    scrollToBottom();
-                }else{
-//
-//                    Context context = getApplicationContext();
-//                    String text = "Device Not Found in Paired List.";
-//                    Toast toast = Toast.makeText(context, text, Toast.LENGTH_LONG);
-//                    toast.show();
+                        logView.append("Connection Started. \n");
+                        scrollToBottom();
+                    }else{
+
+                        Context context = getApplicationContext();
+                        String text = "Device Not Found in Paired List.";
+                        Toast toast = Toast.makeText(context, text, Toast.LENGTH_LONG);
+                        toast.show();
+                    }
+                }else {
+                    Toast.makeText(getApplicationContext(),"Please Turn on Bluetooth", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -179,6 +183,10 @@ public class ControlActivity extends AppCompatActivity {
         filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
         this.registerReceiver(mReceiver1, filter);
 
+
+        initViews();
+        setupListeners();
+        updateUi();
         //IMPORTANT
         //startConnection();
 
@@ -190,17 +198,26 @@ public class ControlActivity extends AppCompatActivity {
         VolumeControlView controllerView = (VolumeControlView) findViewById(R.id.controllerView);
 
         //controllerView.setBackgroundShiningImpl(Color.BLACK);
-
 //        controllerView.setController(new ControllerImpl());
         controllerView.getController().setOnTouchControllerListener( new ControllerImpl.OnTouchControllerListener(){
             @Override
             public void onControllerDown(int angle, int percent){
 
+//                logView = (TextView)findViewById(R.id.logTextControl);
+//                logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
+//
+//                logView.append("Down. \n");
+//                scrollToBottom();
             }
 
             @Override
             public void onControllerMove(int angle, int percent){
-
+//
+//                logView = (TextView)findViewById(R.id.logTextControl);
+//                logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
+//
+//                logView.append("Move. \n");
+//                scrollToBottom();
             }
 
             @Override
@@ -219,7 +236,7 @@ public class ControlActivity extends AppCompatActivity {
                 }
 
                 logView.append("Sending Message: "+ percent +"\n");
-//                logView.append("In Bytes: "+ bytes+"\n");
+//              logView.append("In Bytes: "+ bytes+"\n");
                 scrollToBottom();
             }
         });
@@ -235,13 +252,23 @@ public class ControlActivity extends AppCompatActivity {
 //            scrollToBottom();
 
             float incoming = Float.parseFloat(text);
-//            logView.append(Float.toString(incoming));
-//            if(text!="0\n") {
-//                logView.append(incoming);
-////                scrollToBottom();
-//            }
             logView.append("\n");
             scrollToBottom();
+
+            TextView frequencyView = (TextView)findViewById(R.id.frequencyView);
+            TextView volumeView = (TextView) findViewById(R.id.volumeView);
+
+            if(incoming<=(float)50){
+                logView.append("Volume "+incoming+"\n");
+                scrollToBottom();
+
+                volumeView.setText(String.format(Locale.US, "%.0f", incoming));
+            }else{
+                logView.append("Frequency: "+incoming+"\n");
+                scrollToBottom();
+
+                frequencyView.setText(String.format(Locale.US, "%.01f", incoming));
+            }
         }
     };
 
@@ -321,8 +348,11 @@ public class ControlActivity extends AppCompatActivity {
         logView = (TextView)findViewById(R.id.logTextControl);
         logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
 
-        String x = "e";
-        byte[] bytes = x.getBytes(Charset.defaultCharset());
+//        String x = "e";
+//        byte[] bytes = x.getBytes(Charset.defaultCharset());
+
+        int x = 105;
+        byte[] bytes = toByteArray(x);
 
         mBluetoothConnection.write(bytes);
 
@@ -339,12 +369,46 @@ public class ControlActivity extends AppCompatActivity {
         String x = "f";
         byte[] bytes = x.getBytes(Charset.defaultCharset());
 
+//        byte[] bytes = toByteArray(x);
+
         mBluetoothConnection.write(bytes);
         logView.append("Sending Message: "+ x +"\n");
         scrollToBottom();
 
     }
 
+    public void floatClick(View view){
+
+        logView = (TextView)findViewById(R.id.logTextControl);
+        logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
+
+//        int x = 1040;
+//
+//        byte[] bytes = toByteArray(x);
+//
+//        mBluetoothConnection.write(bytes);
+//
+//        logView.append("Sending Message: "+ x +"\n");
+//        scrollToBottom();
+
+        FragmentManager fm = getFragmentManager();
+        StationsDialogFragment dialogFragment = new StationsDialogFragment();
+        dialogFragment.show(fm, "Sample Fragment");
+    }
+
+    public void refreshClick(View view){
+        logView = (TextView)findViewById(R.id.logTextControl);
+        logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
+
+        int x = 105;
+        byte[] bytes = toByteArray(x);
+
+        mBluetoothConnection.write(bytes);
+
+        logView.append("Sending Message: "+ x +"\n");
+        scrollToBottom();
+
+    }
 
 //    /**
 //     * This method is required for all devices running API23+
@@ -389,6 +453,121 @@ public class ControlActivity extends AppCompatActivity {
 
     }
 
+    private void initViews() {
+        horizontalWheelView = (HorizontalWheelView) findViewById(R.id.horizontalWheelView);
+        tvAngle = (TextView) findViewById(R.id.tvAngle);
+
+        horizontalWheelView.setOnlyPositiveValues(true);
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private void setupListeners() {
+
+        logView = (TextView)findViewById(R.id.logTextControl);
+        logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
+        horizontalWheelView.setListener(new HorizontalWheelView.Listener() {
+            @Override
+            public void onRotationChanged(double radians) {
+                updateUi();
+//                writedata();
+            }
+
+            //            public boolean onTouch(View v, MotionEvent event) {
+//                if(event.getAction() == MotionEvent.ACTION_UP) {
+//                    // release
+//                    logView = (TextView)findViewById(R.id.logTextControl);
+//                    logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
+//
+//                    float frequency = (float)horizontalWheelView.getCompleteTurnFraction();
+//                    frequency *= (float)20.0;
+//                    frequency += (float) 88.0;
+//                    DecimalFormat value = new DecimalFormat("#.#");
+//                    value.format(frequency);
+//
+//                    frequency*=10;
+//
+//                    int x = (int)frequency;
+//
+//                    byte[] bytes = toByteArray(x);
+//
+//                    //mBluetoothConnection.write(bytes);
+//
+//                    logView.append("Sending Message: "+ x +"\n");
+//                    scrollToBottom();
+//                    return false;
+//                } else if(event.getAction() == MotionEvent.ACTION_DOWN) {
+//                    // pressed
+//
+//                    return true;
+//                }
+//                //return super.onTouchEvent(event);
+//                return false;
+//            }
+        });
+
+        horizontalWheelView.setOnTouchListener(new View.OnTouchListener() {
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if(event.getAction() == MotionEvent.ACTION_UP) {
+                    // release
+                writedata();
+                    return false;
+                } else if(event.getAction() == MotionEvent.ACTION_DOWN) {
+                    // pressed
+
+                    return false;
+                }
+                //return super.onTouchEvent(event);
+                return false;
+            }
+        });
+    }
+
+    private void updateUi() {
+        updateText();
+    }
+
+    private void writedata(){
+
+
+        logView = (TextView)findViewById(R.id.logTextControl);
+        logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
+
+        float frequency = (float)horizontalWheelView.getCompleteTurnFraction();
+        frequency *= (float)20.0;
+        frequency += (float) 88.0;
+
+        frequency*=10;
+
+        int x = (int)frequency;
+
+        byte[] bytes = toByteArray(x);
+
+        mBluetoothConnection.write(bytes);
+
+        logView.append("Sending Message: "+ x +"\n");
+        scrollToBottom();
+
+    }
+
+    private void updateText() {
+        float frequency = (float)horizontalWheelView.getCompleteTurnFraction();
+        frequency *= (float)20.0;
+        frequency += (float) 88.0;
+        DecimalFormat value = new DecimalFormat("#.#");
+        value.format(frequency);
+
+        String text = String.format(Locale.US, "%.01f", frequency);
+        tvAngle.setText(text);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        updateUi();
+    }
+
     public byte[] toByteArray(int value) {
         return new byte[] {
                 (byte)(value >> 24),
@@ -397,4 +576,61 @@ public class ControlActivity extends AppCompatActivity {
                 (byte)value};
     }
 
+    public static byte[] toByteArray(float value) {
+        byte[] bytes = new byte[4];
+        ByteBuffer.wrap(bytes).putFloat(value);
+        return bytes;
+    }
+    public void saveStations(Context context, List<Float> stations) {
+        SharedPreferences settings;
+        SharedPreferences.Editor editor;
+
+        settings = context.getSharedPreferences(PREFS_NAME,
+                Context.MODE_PRIVATE);
+        editor = settings.edit();
+
+        Gson gson = new Gson();
+        String jsonFavorites = gson.toJson(stations);
+
+        editor.putString(STATIONS, jsonFavorites);
+
+        editor.apply();
+    }
+
+    public void addStation(Context context, Float value) {
+        List<Float> stations = getStations(context);
+        if (stations == null)
+            stations = new ArrayList<Float>();
+        stations.add(value);
+        saveStations(context, stations);
+    }
+
+    public void removeStation(Context context, Float value) {
+        ArrayList<Float> stations = getStations(context);
+        if (stations != null) {
+            stations.remove(value);
+            saveStations(context, stations);
+        }
+    }
+
+    public ArrayList<Float> getStations(Context context) {
+        SharedPreferences settings;
+        List<Float> stations;
+
+        settings = context.getSharedPreferences(PREFS_NAME,
+                Context.MODE_PRIVATE);
+
+        if (settings.contains(STATIONS)) {
+            String jsonFavorites = settings.getString(STATIONS, null);
+            Gson gson = new Gson();
+            Float[] favoriteItems = gson.fromJson(jsonFavorites,
+                    Float[].class);
+
+            stations = Arrays.asList(favoriteItems);
+            stations = new ArrayList<Float>(stations);
+        } else
+            return null;
+
+        return (ArrayList<Float>) stations;
+    }
 }

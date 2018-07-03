@@ -33,11 +33,20 @@ import android.widget.Toast;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.UUID;
 import com.example.monith.test.BluetoothConnectionService;
 //import com.agilie.volumecontrol.animation.controller.ControllerImpl;
+
+import com.example.monith.test.SharedPreference;
+import com.example.monith.test.CustomList;
+
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import com.google.gson.Gson;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -55,6 +64,10 @@ public class MainActivity extends AppCompatActivity {
     private boolean deviceFound;
     private static final String DEVICE_NAME = "RADIO001";
 
+
+    public static final String PREFS_NAME = "STATIONS_APP";
+    public static final String STATIONS = "saved_stations";
+
 //    public ArrayList<BluetoothDevice> mBTDevices = new ArrayList<>();
 //    public DeviceListAdapter mDeviceListAdapter;
 //    ListView lvNewDevices;
@@ -66,6 +79,8 @@ public class MainActivity extends AppCompatActivity {
 
 
     private BluetoothDevice mBTDevice;
+
+    ListView list ;
 
     private void scrollToBottom()
     {
@@ -223,7 +238,7 @@ public class MainActivity extends AppCompatActivity {
 //
 //        etSend = (EditText) findViewById(R.id.etSend);
 
-        logView = (TextView)findViewById(R.id.logText);
+        logView = (TextView) findViewById(R.id.logText);
         logScroll = (ScrollView) findViewById(R.id.ScrollPane);
 
 //        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -266,14 +281,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                if (mBluetoothAdapter.getState()==BluetoothAdapter.STATE_ON) {
+                if (mBluetoothAdapter.getState() == BluetoothAdapter.STATE_ON) {
                     findDevice();
-                    if (deviceFound){
+                    if (deviceFound) {
                         //startConnection();
                         Intent i = new Intent(MainActivity.this, ControlActivity.class);
                         startActivity(i);
 
-                    }else{
+                    } else {
 
                         Context context = getApplicationContext();
                         String text = "Device Not Found in Paired List.";
@@ -281,14 +296,14 @@ public class MainActivity extends AppCompatActivity {
                         toast.show();
                     }
                 } else {
-                    Toast.makeText(getApplicationContext(),"Please Turn on Bluetooth", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "Please Turn on Bluetooth", Toast.LENGTH_SHORT).show();
                 }
             }
         });
 
         ImageView right;
 
-        right= (ImageView) findViewById(R.id.rightArrowImage);
+        right = (ImageView) findViewById(R.id.rightArrowImage);
 
         right.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -298,11 +313,11 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
-    public void startConnection(){
-        startBTConnection(mBTDevice, MY_UUID_INSECURE);
-    }
-    /**
+//
+//    public void startConnection(){
+//        startBTConnection(mBTDevice, MY_UUID_INSECURE);
+//    }
+  /*
      * starting chat service method
      */
     public void startBTConnection(BluetoothDevice device, UUID uuid){
@@ -486,4 +501,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+
+
 }
