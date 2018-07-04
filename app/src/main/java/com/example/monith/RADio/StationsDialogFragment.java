@@ -1,4 +1,4 @@
-package com.example.monith.test;
+package com.example.monith.RADio;
 
 import android.app.DialogFragment;
 import android.content.Context;
@@ -17,14 +17,10 @@ import java.util.Collections;
 import java.util.List;
 
 
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
-
-import com.google.gson.Gson;
 
 public class StationsDialogFragment extends DialogFragment {
 

@@ -1,4 +1,4 @@
-package com.example.monith.test;
+package com.example.monith.RADio;
 
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
@@ -7,8 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
-
-import com.example.monith.test.R;
 
 import java.util.ArrayList;
 

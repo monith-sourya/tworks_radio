@@ -1,4 +1,4 @@
-package com.example.monith.test;
+package com.example.monith.RADio;
 
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
@@ -9,44 +9,23 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import android.view.MotionEvent;
-import android.view.GestureDetector;
-import android.support.v4.view.GestureDetectorCompat;
 import android.widget.Toast;
 
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.UUID;
-import com.example.monith.test.BluetoothConnectionService;
 //import com.agilie.volumecontrol.animation.controller.ControllerImpl;
 
-import com.example.monith.test.SharedPreference;
-import com.example.monith.test.CustomList;
-
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
-import com.google.gson.Gson;
 
 public class MainActivity extends AppCompatActivity {
 

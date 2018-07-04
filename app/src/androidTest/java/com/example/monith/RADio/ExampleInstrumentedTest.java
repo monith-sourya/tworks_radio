@@ -1,4 +1,4 @@
-package com.example.monith.test;
+package com.example.monith.RADio;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
