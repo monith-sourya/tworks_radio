@@ -87,17 +87,26 @@
         app:layout_constraintTop_toBottomOf="@+id/linearLayout"
         app:layout_constraintVertical_bias="0.183" />
 
-    <ImageView
-        android:id="@+id/rightArrowImage"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
+    <io.rmiri.buttonloading.ButtonLoading
+        android:id="@+id/buttonLoading"
+        android:layout_width="match_parent"
+        android:layout_height="143dp"
         android:layout_marginBottom="8dp"
-        android:layout_marginStart="160dp"
-        android:src="@drawable/ic_double_angle_pointing_to_right"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        app:BL_backgroundColor="#80ffffff"
+        app:BL_circleColor="#00AFEF"
+        app:BL_circleColorSecond="#8000AFEF"
+        app:BL_enable="true"
+        app:BL_stateShow="normal"
+        app:BL_text="Start"
+        app:BL_textColor="#FFFFFF"
+        app:BL_textSize="14sp"
+        app:layout_constraintBottom_toTopOf="@+id/list"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnStartConn"
-        app:layout_constraintVertical_bias="0.108" />
+        app:layout_constraintTop_toBottomOf="@+id/btnStartConn" />
 
     <ListView
         android:id="@+id/list"

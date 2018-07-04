@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -24,6 +25,8 @@ import android.widget.Toast;
 
 import java.util.Set;
 import java.util.UUID;
+
+import io.rmiri.buttonloading.ButtonLoading;
 //import com.agilie.volumecontrol.animation.controller.ControllerImpl;
 
 
@@ -39,6 +42,8 @@ public class MainActivity extends AppCompatActivity {
     private ScrollView logScroll;
 
     private Button btnStartConnection;
+
+    private ButtonLoading buttonLoading;
 
     private boolean deviceFound;
     private static final String DEVICE_NAME = "RADIO001";
@@ -280,15 +285,23 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        ImageView right;
 
-        right = (ImageView) findViewById(R.id.rightArrowImage);
-
-        right.setOnClickListener(new View.OnClickListener() {
+        buttonLoading = (ButtonLoading) findViewById(R.id.buttonLoading);
+        buttonLoading.setOnButtonLoadingListener(new ButtonLoading.OnButtonLoadingListener() {
             @Override
-            public void onClick(View v) {
-                logView.append("Clicked");
-                scrollToBottom();
+            public void onClick() {
+                Toast.makeText(getApplicationContext(), "onClick", Toast.LENGTH_SHORT).show();
+              finishLoading();
+            }
+
+            @Override
+            public void onStart() {
+                //...
+            }
+
+            @Override
+            public void onFinish() {
+                //...
             }
         });
     }
@@ -479,6 +492,16 @@ public class MainActivity extends AppCompatActivity {
             toast.show();
         }
 
+    }
+
+    void finishLoading() {
+        //call setProgress(false) after 5 second
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                buttonLoading.setProgress(false);
+            }
+        }, 1000);
     }
 
 

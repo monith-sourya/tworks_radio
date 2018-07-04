@@ -29,6 +29,8 @@ dependencies {
 //    implementation 'com.moldedbits.dialpicker:android-dial-picker:1.0'
     implementation 'com.github.shchurov:horizontalwheelview:0.9.5'
     implementation 'com.google.code.gson:gson:2.8.2'
+
+    implementation 'com.github.rasoulmiri:buttonloading:v1.0.8'
     implementation 'com.android.support:recyclerview-v7:27.1.1'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
