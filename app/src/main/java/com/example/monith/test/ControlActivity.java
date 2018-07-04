@@ -34,6 +34,7 @@ import java.nio.charset.Charset;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -66,6 +67,8 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
 
     BluetoothConnectionService mBluetoothConnection;
 
+    private boolean Connected;
+
     private static final UUID MY_UUID_INSECURE =
             UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     private BluetoothDevice mBTDevice;
@@ -87,6 +90,9 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
 
     public static final String PREFS_NAME = "STATIONS_APP";
     public static final String STATIONS = "saved_stations";
+
+    private ArrayList<Float> savedStations ;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,9 +117,6 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
                 if (mBluetoothAdapter.getState()==BluetoothAdapter.STATE_ON) {
                     if (deviceFound){
                         startConnection();
-
-                        logView.append("Connection Started. \n");
-                        scrollToBottom();
                     }else{
 
                         Context context = getApplicationContext();
@@ -127,55 +130,10 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
             }
         });
 
-//        btnSend.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                byte[] bytes = etSend.getText().toString().getBytes(Charset.defaultCharset());
-//                String s = etSend.getText().toString();
-//
-//
-//                mBluetoothConnection.write(bytes);
-//
-//                logView.append("Sending Message: "+ s +"\n");
-//                scrollToBottom();
-//
-//                etSend.setText("");
-//            }
-//        });
-
-//        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-//            @Override
-//            public void onProgressChanged(SeekBar seekBar, int progress,
-//                                          boolean fromUser) {
-//                //Toast.makeText(getApplicationContext(),"seekbar progress: "+progress, Toast.LENGTH_SHORT).show();
-//
-//                logView = (TextView)findViewById(R.id.logTextControl);
-//                logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
-//
-////                String x = ;
-////                byte[] bytes = x.getBytes(Charset.defaultCharset());
-//
-//                byte[] bytes = toByteArray(progress);
-//                //mBluetoothConnection.write(bytes);
-//
-//                logView.append("Sending Message: "+ progress +"\n");
-//                scrollToBottom();
-//            }
-//
-//            @Override
-//            public void onStartTrackingTouch(SeekBar seekBar) {
-//                Toast.makeText(getApplicationContext(),"seekbar touch started!", Toast.LENGTH_SHORT).show();
-//            }
-//
-//            @Override
-//            public void onStopTrackingTouch(SeekBar seekBar) {
-//                Toast.makeText(getApplicationContext(),"seekbar touch stopped!", Toast.LENGTH_SHORT).show();
-//            }
-//        });
-
         initController();
 
         LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, new IntentFilter("incomingMessage"));
+        LocalBroadcastManager.getInstance(this).registerReceiver(connectionBroadcastReceiver,new IntentFilter("connectionMessage"));
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
@@ -189,57 +147,47 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
         updateUi();
         //IMPORTANT
         //startConnection();
-
     }
 
     private void initController(){
-//        ControllerImpl controllerView = (ControllerImpl) findViewById(R.id.controllerView);
-
         VolumeControlView controllerView = (VolumeControlView) findViewById(R.id.controllerView);
 
-        //controllerView.setBackgroundShiningImpl(Color.BLACK);
-//        controllerView.setController(new ControllerImpl());
+
         controllerView.getController().setOnTouchControllerListener( new ControllerImpl.OnTouchControllerListener(){
+
             @Override
             public void onControllerDown(int angle, int percent){
-
-//                logView = (TextView)findViewById(R.id.logTextControl);
-//                logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
-//
-//                logView.append("Down. \n");
-//                scrollToBottom();
             }
 
             @Override
             public void onControllerMove(int angle, int percent){
-//
-//                logView = (TextView)findViewById(R.id.logTextControl);
-//                logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
-//
-//                logView.append("Move. \n");
-//                scrollToBottom();
             }
 
             @Override
             public void onAngleChange(int angle, int percent){
-                logView = (TextView)findViewById(R.id.logTextControl);
-                logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
+                if (Connected) {
+                    logView = (TextView)findViewById(R.id.logTextControl);
+                    logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
 
 //                String x = ;
 //                byte[] bytes = x.getBytes(Charset.defaultCharset());
-                percent/=2;
+                    percent/=2;
 
-                byte[] bytes = toByteArray(percent);
+                    byte[] bytes = toByteArray(percent);
 
-                if(percent!=0) {
-                    mBluetoothConnection.write(bytes);
+                    if(percent!=0) {
+                        mBluetoothConnection.write(bytes);
+                    }
+
+                    logView.append("Sending Message: "+ percent +"\n");
+                    scrollToBottom();
+                } else {
+                    Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
                 }
-
-                logView.append("Sending Message: "+ percent +"\n");
-//              logView.append("In Bytes: "+ bytes+"\n");
-                scrollToBottom();
             }
         });
+
+
 
     }
     BroadcastReceiver mReceiver = new BroadcastReceiver() {
@@ -263,12 +211,49 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
                 scrollToBottom();
 
                 volumeView.setText(String.format(Locale.US, "%.0f", incoming));
+            }else if(incoming==(float)424.6){
+
+                Connected = true;
+                logView.append("Connected.\n");
+                scrollToBottom();
             }else{
                 logView.append("Frequency: "+incoming+"\n");
                 scrollToBottom();
 
                 frequencyView.setText(String.format(Locale.US, "%.01f", incoming));
+
+                double fraction = (double)incoming;
+                fraction-=88;
+                fraction/=20;
+
+                horizontalWheelView.setCompleteTurnFraction(fraction);
+                updateUi();
             }
+        }
+    };
+
+    BroadcastReceiver connectionBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String text = intent.getStringExtra("connection");
+
+            logView.append("Intent Received.\n");
+            scrollToBottom();
+            Toast.makeText(getApplicationContext(),text +"Received.", Toast.LENGTH_LONG).show();
+
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            testConnection();
+
+            try {
+                Thread.sleep(300);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            refresh();
         }
     };
 
@@ -338,113 +323,108 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
 
         unregisterReceiver(mReceiver);
         unregisterReceiver(mReceiver1);
+        unregisterReceiver(connectionBroadcastReceiver);
 
         super.onDestroy();
     }
 
 
     public void leftClick(View view){
+        if (Connected) {
+            logView = (TextView)findViewById(R.id.logTextControl);
+            logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
 
-        logView = (TextView)findViewById(R.id.logTextControl);
-        logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
+            savedStations = getStations(getApplicationContext());
+            Float current = Float.parseFloat(tvAngle.getText().toString());
 
-//        String x = "e";
-//        byte[] bytes = x.getBytes(Charset.defaultCharset());
-
-        int x = 105;
-        byte[] bytes = toByteArray(x);
-
-        mBluetoothConnection.write(bytes);
-
-        logView.append("Sending Message: "+ x +"\n");
-        scrollToBottom();
+            for(int i=(savedStations.size()-1);i>=0;i--){
+                if(savedStations.get(i)<current){
+                    StationChange(savedStations.get(i));
+                    return;
+                }
+            }
+            logView.append("Station Changed.\n");
+            scrollToBottom();
+        } else {
+            Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
+        }
+        return;
 
     }
 
     public void rightClick(View view){
 
-        logView = (TextView)findViewById(R.id.logTextControl);
-        logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
+        if (Connected) {
+            logView = (TextView)findViewById(R.id.logTextControl);
+            logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
 
-        String x = "f";
-        byte[] bytes = x.getBytes(Charset.defaultCharset());
+            savedStations = getStations(getApplicationContext());
+            Float current = Float.parseFloat(tvAngle.getText().toString());
 
-//        byte[] bytes = toByteArray(x);
-
-        mBluetoothConnection.write(bytes);
-        logView.append("Sending Message: "+ x +"\n");
-        scrollToBottom();
+            for(int i=0;i<savedStations.size();i++){
+                if(savedStations.get(i)>current){
+                    StationChange(savedStations.get(i));
+                    return;
+                }
+            }
+            logView.append("Station Changed.\n");
+            scrollToBottom();
+        } else {
+            Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
+        }
+        return;
 
     }
 
-    public void floatClick(View view){
-
+    public void savedStationsClick(View view){
         logView = (TextView)findViewById(R.id.logTextControl);
         logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
-
-//        int x = 1040;
-//
-//        byte[] bytes = toByteArray(x);
-//
-//        mBluetoothConnection.write(bytes);
-//
-//        logView.append("Sending Message: "+ x +"\n");
-//        scrollToBottom();
 
         FragmentManager fm = getFragmentManager();
         StationsDialogFragment dialogFragment = new StationsDialogFragment();
         dialogFragment.show(fm, "Sample Fragment");
+
     }
 
+    public void refresh(){
+        if (Connected) {
+            logView = (TextView)findViewById(R.id.logTextControl);
+            logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
+
+            int x = 105;
+            byte[] bytes = toByteArray(x);
+
+            mBluetoothConnection.write(bytes);
+
+            logView.append("Sending Message: "+ x +"\n");
+            scrollToBottom();
+        } else {
+            Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
+        }
+    }
     public void refreshClick(View view){
-        logView = (TextView)findViewById(R.id.logTextControl);
-        logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
-
-        int x = 105;
-        byte[] bytes = toByteArray(x);
-
-        mBluetoothConnection.write(bytes);
-
-        logView.append("Sending Message: "+ x +"\n");
-        scrollToBottom();
-
+        refresh();
     }
 
     public void saveClick(View view){
-        logView = (TextView)findViewById(R.id.logTextControl);
-        logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
+        if (Connected) {
+            logView = (TextView)findViewById(R.id.logTextControl);
+            logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
 
-        final Context context = getApplicationContext();
-        String val = tvAngle.getText().toString();
-        Float frequency = Float.parseFloat(val);
+            final Context context = getApplicationContext();
+            String val = tvAngle.getText().toString();
+            Float frequency = Float.parseFloat(val);
 
-        addStation(context, frequency);
+            addStation(context, frequency);
 
-        Toast.makeText(getApplicationContext(), String.format(Locale.US, "%.01f Saved", frequency), Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), String.format(Locale.US, "%.01f Saved", frequency), Toast.LENGTH_SHORT).show();
 
-        logView.append("Saved Station: "+ frequency +"\n");
-        scrollToBottom();
+            logView.append("Saved Station: "+ frequency +"\n");
+            scrollToBottom();
+        } else {
+            Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
+        }
     }
-
-//    /**
-//     * This method is required for all devices running API23+
-//     * Android must programmatically check the permissions for bluetooth. Putting the proper permissions
-//     * in the manifest is not enough.
-//     *
-//     * NOTE: This will only execute on versions > LOLLIPOP because it is not needed otherwise.
-//     */
-//    private void checkBTPermissions() {
-//        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP){
-//            int permissionCheck = this.checkSelfPermission("Manifest.permission.ACCESS_FINE_LOCATION");
-//            permissionCheck += this.checkSelfPermission("Manifest.permission.ACCESS_COARSE_LOCATION");
-//            if (permissionCheck != 0) {
-//
-//                this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 1001); //Any number
-//            }
-//        }else{
-//            Log.d(TAG, "checkBTPermissions: No need to check permissions. SDK version < LOLLIPOP.");
-//        }
-//    }
 
     private void findDevice() {
         Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
@@ -484,8 +464,12 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
         horizontalWheelView.setListener(new HorizontalWheelView.Listener() {
             @Override
             public void onRotationChanged(double radians) {
-                updateUi();
+
+                if (Connected) {
+                    updateUi();
 //                writedata();
+                } else {
+                }
             }
 
             //            public boolean onTouch(View v, MotionEvent event) {
@@ -527,7 +511,11 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
             public boolean onTouch(View v, MotionEvent event) {
                 if(event.getAction() == MotionEvent.ACTION_UP) {
                     // release
-                writedata();
+                    if (Connected) {
+                        writedata();
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Please connect to device.", Toast.LENGTH_LONG).show();
+                    }
                     return false;
                 } else if(event.getAction() == MotionEvent.ACTION_DOWN) {
                     // pressed
@@ -618,6 +606,7 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
         if (stations == null)
             stations = new ArrayList<Float>();
         stations.add(value);
+        Collections.sort(stations);
         saveStations(context, stations);
     }
 
@@ -625,6 +614,7 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
         ArrayList<Float> stations = getStations(context);
         if (stations != null) {
             stations.remove(value);
+            Collections.sort(stations);
             saveStations(context, stations);
         }
     }
@@ -653,12 +643,38 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
     @Override
     public void onStationClick(Float frequency) {
 
-        double fraction = (double)frequency;
-        fraction-=88;
-        fraction/=20;
-
-        horizontalWheelView.setCompleteTurnFraction(fraction);
-        writedata();
         Toast.makeText(getApplicationContext(),"Activity received: "+frequency,Toast.LENGTH_LONG).show();
+
+        StationChange(frequency);
+    }
+
+    public void StationChange(Float frequency){
+
+        if (Connected) {
+            double fraction = (double)frequency;
+            fraction-=88;
+            fraction/=20;
+
+            horizontalWheelView.setCompleteTurnFraction(fraction);
+            writedata();
+            updateUi();
+            Toast.makeText(getApplicationContext(),"Station Changed to: "+frequency,Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    public void testConnection(){
+        logView = (TextView)findViewById(R.id.logTextControl);
+        logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
+
+        Connected = false;
+        int x = 106;
+        byte[] bytes = toByteArray(x);
+
+        mBluetoothConnection.write(bytes);
+
+        logView.append("Sending Message: "+ x +"\n");
+        scrollToBottom();
     }
 }

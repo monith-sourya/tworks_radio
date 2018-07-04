@@ -196,7 +196,7 @@ public class MainActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if(action.equals("finish")){
-                finish();
+//                finish();
             }
         }
     };

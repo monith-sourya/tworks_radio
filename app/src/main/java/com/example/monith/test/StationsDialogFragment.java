@@ -13,6 +13,7 @@ import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -109,6 +110,7 @@ public class StationsDialogFragment extends DialogFragment {
         if (stations == null)
             stations = new ArrayList<Float>();
         stations.add(value);
+        Collections.sort(stations);
         saveStations(context, stations);
     }
 
@@ -116,6 +118,7 @@ public class StationsDialogFragment extends DialogFragment {
         ArrayList<Float> stations = getStations(context);
         if (stations != null) {
             stations.remove(value);
+            Collections.sort(stations);
             saveStations(context, stations);
         }
     }

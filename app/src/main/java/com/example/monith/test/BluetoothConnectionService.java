@@ -225,10 +225,16 @@ public class BluetoothConnectionService {
         public ConnectedThread(BluetoothSocket socket) {
             Log.d(TAG, "ConnectedThread: Starting.");
 
+
             mmSocket = socket;
             InputStream tmpIn = null;
             OutputStream tmpOut = null;
 
+            String connectedMessage = "Connected";
+            Intent connectionIntent = new Intent("connectionMessage");
+            connectionIntent.putExtra("connection", connectedMessage);
+
+            LocalBroadcastManager.getInstance(mContext).sendBroadcast(connectionIntent);
             //dismiss the progressdialog when connection is established
             try{
                 mProgressDialog.dismiss();
