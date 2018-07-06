@@ -8,37 +8,50 @@
     tools:context=".ControlActivity"
     tools:showIn="@layout/activity_control">
 
-    <Button
-        android:id="@+id/btnStartConn"
-        android:layout_width="wrap_content"
-        android:layout_height="44dp"
+    <io.rmiri.buttonloading.ButtonLoading
+        android:id="@+id/buttonLoading"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        app:BL_backgroundColor="#104CBD"
+        app:BL_circleColor="#00AFEF"
+        app:BL_circleColorSecond="#8000AFEF"
+        app:BL_enable="true"
+        app:BL_stateShow="normal"
+        app:BL_text="Start"
+        app:BL_textColor="#FFFFFF"
+        app:BL_textSize="14sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <pl.droidsonroids.gif.GifImageView
+        android:id="@+id/refreshGIF"
+        android:layout_width="78dp"
+        android:layout_height="78dp"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="Start Connection"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/linlayoutStatus"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.038"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0" />
-
-
+        app:layout_constraintTop_toBottomOf="@+id/buttonLoading" />
     <LinearLayout
         android:id="@+id/linearLayout"
         android:layout_width="fill_parent"
         android:layout_height="95dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="12dp"
         android:orientation="vertical"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnStartConn">
+        tools:layout_editor_absoluteY="52dp">
 
         <ScrollView
             android:id="@+id/ScrollPaneControl"
@@ -58,28 +71,27 @@
     <LinearLayout
         android:id="@+id/linearLayout4"
         android:layout_width="257dp"
-        android:layout_height="103dp"
+        android:layout_height="90dp"
         android:layout_gravity="center"
-        android:layout_marginBottom="8dp"
+        android:layout_marginBottom="0dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
         android:gravity="center_horizontal"
         android:orientation="vertical"
-        app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
+        app:layout_constraintBottom_toTopOf="@+id/btnSaveStation"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.504"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout"
-        app:layout_constraintVertical_bias="0.921">
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0">
 
 
         <com.github.shchurov.horizontalwheelview.HorizontalWheelView
             android:id="@+id/horizontalWheelView"
             android:layout_width="200dp"
             android:layout_height="64dp"
-            android:layout_marginTop="16dp"
-            android:paddingBottom="32dp"
+            android:layout_marginTop="0dp"
+            android:paddingBottom="0dp"
             app:activeColor="@android:color/holo_red_dark"
             app:normalColor="@android:color/white" />
 
@@ -87,10 +99,12 @@
             android:id="@+id/tvAngle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-condensed"
             android:text="Angle"
-            android:textColor="@android:color/white"
+            android:textColor="@android:color/holo_red_light"
             android:textSize="14sp"
-            android:visibility="visible" />
+            android:visibility="visible"
+            tools:textColor="@android:color/white" />
 
     </LinearLayout>
 
@@ -99,24 +113,27 @@
 
         android:layout_width="wrap_content"
         android:layout_height="163dp"
+        android:layout_marginBottom="8dp"
         android:layout_marginTop="168dp"
         android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout">
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout"
+        app:layout_constraintVertical_bias="0.725">
 
         <Button
             android:id="@+id/leftButton"
             style="@style/Base.Widget.AppCompat.DrawerArrowToggle"
             android:layout_width="0dp"
-            android:layout_height="99dp"
+            android:layout_height="60dp"
             android:layout_gravity="left|center_vertical"
             android:layout_margin="8dp"
             android:layout_marginBottom="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp"
+            android:layout_marginRight="0dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:layout_weight="1"
@@ -128,11 +145,10 @@
             android:layout_width="0dp"
             android:layout_height="187dp"
             android:layout_gravity="center"
-            android:layout_marginEnd="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_weight="3
-"
+            android:layout_marginEnd="0dp"
+            android:layout_marginStart="0dp"
+            android:layout_marginTop="0dp"
+            android:layout_weight="3"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/linearLayout2" />
@@ -140,12 +156,12 @@
         <Button
             android:id="@+id/rightButton"
             android:layout_width="0dp"
-            android:layout_height="99dp"
+            android:layout_height="60dp"
             android:layout_gravity="left|center_vertical"
             android:layout_margin="8dp"
             android:layout_marginBottom="8dp"
             android:layout_marginEnd="8dp"
-            android:layout_marginLeft="8dp"
+            android:layout_marginLeft="0dp"
             android:layout_marginRight="8dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
@@ -167,25 +183,9 @@
         android:text="Saved Stations"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.916"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/controllerView"
-        app:layout_constraintVertical_bias="1.0" />
-
-    <Button
-        android:id="@+id/btnRefresh"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:text="Refresh"
-        android:onClick="refreshClick"
-        app:layout_constraintBottom_toTopOf="@+id/linearLayout"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/btnStartConn"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintVertical_bias="0.45" />
 
     <LinearLayout
         android:id="@+id/linlayoutStatus"
@@ -199,7 +199,8 @@
         app:layout_constraintBottom_toTopOf="@+id/linearLayout4"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout">
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0">
 
         <TextView
             android:id="@+id/frequencyView"
@@ -207,9 +208,10 @@
             android:layout_height="wrap_content"
             android:layout_gravity="top|center_vertical|center"
             android:layout_weight="2"
-            android:text="TextView"
+            android:text="Frequency"
             android:textAlignment="center"
             android:textAppearance="@android:style/TextAppearance.Material.Large"
+            android:textColor="@android:color/holo_blue_dark"
             android:textSize="28sp" />
 
         <TextView
@@ -218,22 +220,24 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|center_vertical|center"
             android:layout_weight="1"
-            android:text="TextView"
+            android:text="Volume"
+            android:textAlignment="center"
             android:textAppearance="@android:style/TextAppearance.Material.Large"
+            android:textColor="@android:color/holo_blue_light"
             android:textSize="18sp" />
     </LinearLayout>
 
-    <Button
+    <Button style="@style/Widget.AppCompat.Button.Borderless"
         android:id="@+id/btnSaveStation"
-        android:layout_width="wrap_content"
+        android:layout_width="124dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:text="Save"
+        android:layout_marginBottom="0dp"
+        android:layout_marginEnd="0dp"
+        android:layout_marginStart="0dp"
         android:onClick="saveClick"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/btnFloat"
+        android:text="Save Station"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
 </android.support.constraint.ConstraintLayout>

@@ -9,7 +9,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -21,6 +23,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -38,6 +41,9 @@ import com.google.gson.Gson;
 
 import java.util.Locale;
 
+import io.rmiri.buttonloading.ButtonLoading;
+import pl.droidsonroids.gif.GifDrawable;
+import pl.droidsonroids.gif.GifImageView;
 
 
 public class ControlActivity extends AppCompatActivity implements StationsDialogFragment.StationSelectedListener {
@@ -49,12 +55,14 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
     private TextView logView;
     private ScrollView logScroll;
 
+    private ButtonLoading buttonLoading;
+
     private Button btnStartConnection;
     private Button btnSend;
     private EditText etSend;
 
     private boolean deviceFound;
-    private static final String DEVICE_NAME = "RADIO001";
+    private static final String DEVICE_NAME = "RADIO002";
 
     BluetoothConnectionService mBluetoothConnection;
 
@@ -79,10 +87,13 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
     private HorizontalWheelView horizontalWheelView;
     private TextView tvAngle;
 
-    public static final String PREFS_NAME = "STATIONS_APP";
+    public static final String PREFS_NAME = "RADIO_APP";
     public static final String STATIONS = "saved_stations";
 
     private ArrayList<Float> savedStations ;
+
+
+    private GifDrawable gifDrawableRefresh;
 
 
     @Override
@@ -90,7 +101,7 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_control);
 
-        btnStartConnection = (Button) findViewById(R.id.btnStartConn);
+//        btnStartConnection = (Button) findViewById(R.id.btnStartConn);
 
         logView = (TextView)findViewById(R.id.logTextControl);
         logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
@@ -100,26 +111,26 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
 
 
 
-        btnStartConnection.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                findDevice();
-
-                if (mBluetoothAdapter.getState()==BluetoothAdapter.STATE_ON) {
-                    if (deviceFound){
-                        startConnection();
-                    }else{
-
-                        Context context = getApplicationContext();
-                        String text = "Device Not Found in Paired List.";
-                        Toast toast = Toast.makeText(context, text, Toast.LENGTH_LONG);
-                        toast.show();
-                    }
-                }else {
-                    Toast.makeText(getApplicationContext(),"Please Turn on Bluetooth", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
+//        btnStartConnection.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                findDevice();
+//
+//                if (mBluetoothAdapter.getState()==BluetoothAdapter.STATE_ON) {
+//                    if (deviceFound){
+//                        startConnection();
+//                    }else{
+//
+//                        Context context = getApplicationContext();
+//                        String text = "Device Not Found in Paired List.";
+//                        Toast toast = Toast.makeText(context, text, Toast.LENGTH_LONG);
+//                        toast.show();
+//                    }
+//                }else {
+//                    Toast.makeText(getApplicationContext(),"Please Turn on Bluetooth", Toast.LENGTH_SHORT).show();
+//                }
+//            }
+//        });
 
         initController();
 
@@ -138,6 +149,63 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
         updateUi();
         //IMPORTANT
         //startConnection();
+
+        buttonLoading = (ButtonLoading) findViewById(R.id.buttonLoading);
+        buttonLoading.setOnButtonLoadingListener(new ButtonLoading.OnButtonLoadingListener() {
+            @Override
+            public void onClick() {
+//                Toast.makeText(getApplicationContext(), "onClick", Toast.LENGTH_SHORT).show();
+                findDevice();
+
+                if (mBluetoothAdapter.getState()==BluetoothAdapter.STATE_ON) {
+                    if (deviceFound){
+                        startConnection();
+                    }else{
+
+                        Context context = getApplicationContext();
+                        String text = "Device Not Found in Paired List.";
+                        Toast toast = Toast.makeText(context, text, Toast.LENGTH_LONG);
+                        toast.show();
+                    }
+                }else {
+                    Toast.makeText(getApplicationContext(),"Please Turn on Bluetooth", Toast.LENGTH_SHORT).show();
+                }
+//                finishLoading();
+            }
+
+            @Override
+            public void onStart() {
+                //...
+            }
+
+            @Override
+            public void onFinish() {
+                //...
+            }
+        });
+
+        final GifImageView gifImageView = (GifImageView) findViewById(R.id.refreshGIF);
+
+        try {
+            gifDrawableRefresh = new GifDrawable(getResources(), R.drawable.loading);
+            gifImageView.setImageDrawable(gifDrawableRefresh);
+        } catch (Resources.NotFoundException e){
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        gifImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(gifDrawableRefresh.isRunning()) {
+                    gifDrawableRefresh.stop();
+                }else{
+                    gifDrawableRefresh.start();
+                }
+                refresh();
+            }
+        });
     }
 
     private void initController(){
@@ -169,7 +237,6 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
                     if(percent!=0) {
                         mBluetoothConnection.write(bytes);
                     }
-
                     logView.append("Sending Message: "+ percent +"\n");
                     scrollToBottom();
                 } else {
@@ -230,8 +297,6 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
 
             logView.append("Intent Received.\n");
             scrollToBottom();
-            Toast.makeText(getApplicationContext(),text +"Received.", Toast.LENGTH_LONG).show();
-
             try {
                 Thread.sleep(500);
             } catch (InterruptedException e) {
@@ -240,11 +305,13 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
             testConnection();
 
             try {
-                Thread.sleep(300);
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            refresh();
+//            refresh();
+            finishLoading();
+//            refresh();
         }
     };
 
@@ -312,9 +379,9 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
     protected void onDestroy() {
         Log.d(TAG, "onDestroy: called.");
 
-        unregisterReceiver(mReceiver);
+//        unregisterReceiver(mReceiver);
         unregisterReceiver(mReceiver1);
-        unregisterReceiver(connectionBroadcastReceiver);
+//        unregisterReceiver(connectionBroadcastReceiver);
 
         super.onDestroy();
     }
@@ -503,7 +570,10 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
                 if(event.getAction() == MotionEvent.ACTION_UP) {
                     // release
                     if (Connected) {
-                        writedata();
+//                        writedata();
+
+                        float frequency = Float.parseFloat(tvAngle.getText().toString());
+                        StationChange(frequency);
                     } else {
                         Toast.makeText(getApplicationContext(), "Please connect to device.", Toast.LENGTH_LONG).show();
                     }
@@ -634,7 +704,7 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
     @Override
     public void onStationClick(Float frequency) {
 
-        Toast.makeText(getApplicationContext(),"Activity received: "+frequency,Toast.LENGTH_LONG).show();
+//        Toast.makeText(getApplicationContext(),"Activity received: "+frequency,Toast.LENGTH_LONG).show();
 
         StationChange(frequency);
     }
@@ -667,5 +737,14 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
 
         logView.append("Sending Message: "+ x +"\n");
         scrollToBottom();
+    }
+    void finishLoading() {
+        //call setProgress(false) after 5 second
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                buttonLoading.setProgress(false);
+            }
+        }, 1000);
     }
 }

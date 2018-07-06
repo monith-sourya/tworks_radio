@@ -28,20 +28,9 @@ public class PairActivity extends AppCompatActivity implements AdapterView.OnIte
     public DeviceListAdapter mDeviceListAdapter;
     ListView lvNewDevices;
 
-    private TextView logView;
-    private ScrollView logScroll;
 
     private BluetoothDevice mBTDevice;
-    private void scrollToBottom()
-    {
-        logScroll.post(new Runnable()
-        {
-            public void run()
-            {
-                logScroll.smoothScrollTo(0, logView.getBottom());
-            }
-        });
-    }
+
 
     /**
      * Broadcast Receiver for listing devices that are not yet paired
@@ -52,17 +41,9 @@ public class PairActivity extends AppCompatActivity implements AdapterView.OnIte
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
 
-            logView = (TextView)findViewById(R.id.logText);
-            logScroll = (ScrollView) findViewById(R.id.ScrollPane);
-
-            logView.append("onReceive: ACTION FOUND.\n");
-            scrollToBottom();
-
             if (action.equals(BluetoothDevice.ACTION_FOUND)){
                 BluetoothDevice device = intent.getParcelableExtra (BluetoothDevice.EXTRA_DEVICE);
                 mBTDevices.add(device);
-                logView.append("onReceive: " + device.getName() + ": " + device.getAddress()+"\n");
-                scrollToBottom();
                 mDeviceListAdapter = new DeviceListAdapter(context, R.layout.device_adapter_view, mBTDevices);
                 lvNewDevices.setAdapter(mDeviceListAdapter);
             }
@@ -74,25 +55,16 @@ public class PairActivity extends AppCompatActivity implements AdapterView.OnIte
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
 
-            logView = (TextView)findViewById(R.id.logText);
-            logScroll = (ScrollView) findViewById(R.id.ScrollPane);
-
             if(action.equals(BluetoothDevice.ACTION_BOND_STATE_CHANGED)){
                 BluetoothDevice mDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 
                 if(mDevice.getBondState()== BluetoothDevice.BOND_BONDED){
-                    logView.append("Device Bonded. \n");
-                    scrollToBottom();
 
                     mBTDevice = mDevice;
                 }
                 if(mDevice.getBondState()==BluetoothDevice.BOND_BONDING){
-                    logView.append("Device bonding. \n");
-                    scrollToBottom();
                 }
                 if(mDevice.getBondState()== BluetoothDevice.BOND_NONE){
-                    logView.append("BOND_None. \n");
-                    scrollToBottom();
                 }
             }
         }
@@ -107,9 +79,6 @@ public class PairActivity extends AppCompatActivity implements AdapterView.OnIte
 
         lvNewDevices = (ListView) findViewById(R.id.lvNewDevices);
         mBTDevices = new ArrayList<>();
-
-        logView = (TextView)findViewById(R.id.logText);
-        logScroll = (ScrollView) findViewById(R.id.ScrollPane);
 
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -141,29 +110,17 @@ public class PairActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     public void Discover(){
-        logView = (TextView)findViewById(R.id.logText);
-        logScroll = (ScrollView) findViewById(R.id.ScrollPane);
-
         if(mBluetoothAdapter.getState()!=BluetoothAdapter.STATE_ON){
-            logView.append("Please Turn on Bluetooth.\n");
-            scrollToBottom();
         }else {
-            logView.append("btnDiscover: Looking for unpaired devices.\n");
-            scrollToBottom();
 
             if (mBluetoothAdapter.isDiscovering()) {
                 mBluetoothAdapter.cancelDiscovery();
-                logView.append("btnDiscover: Canceling discovery.\n");
-                scrollToBottom();
-
                 //check BT permissions in manifest
                 checkBTPermissions();
 
                 mBluetoothAdapter.startDiscovery();
                 IntentFilter discoverDevicesIntent = new IntentFilter(BluetoothDevice.ACTION_FOUND);
                 registerReceiver(mBroadcastReceiver3, discoverDevicesIntent);
-                logView.append("Starting Discovery again.\n");
-                scrollToBottom();
             }
             if (!mBluetoothAdapter.isDiscovering()) {
 
@@ -182,14 +139,8 @@ public class PairActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     public void btnCancelDiscover(View view){
-
-        logView = (TextView)findViewById(R.id.logText);
-        logScroll = (ScrollView) findViewById(R.id.ScrollPane);
-
         if(mBluetoothAdapter.isDiscovering()){
             mBluetoothAdapter.cancelDiscovery();
-            logView.append("Cancelled Discovery");
-            scrollToBottom();
         }
     }
     private void checkBTPermissions() {
@@ -208,24 +159,11 @@ public class PairActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-
-        logView = (TextView)findViewById(R.id.logText);
-        logScroll = (ScrollView) findViewById(R.id.ScrollPane);
-
         mBluetoothAdapter.cancelDiscovery();
         String deviceName = mBTDevices.get(position).getName();
         String deviceAddress = mBTDevices.get(position).getAddress();
 
-        logView.append("Device Selected. \n");
-        scrollToBottom();
-        logView.append("Device Name: "+ deviceName+"\n");
-        scrollToBottom();
-        logView.append("Device Address: " + deviceAddress+ "\n");
-        scrollToBottom();
-
         if(Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2){
-            logView.append("Trying to Pair with Device: "+deviceName+"\n");
-            scrollToBottom();
             mBTDevices.get(position).createBond();
 
             mBTDevice = mBTDevices.get(position);

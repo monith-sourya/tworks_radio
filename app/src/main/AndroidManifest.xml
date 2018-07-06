@@ -20,6 +20,7 @@
         <activity
             android:name="com.example.monith.RADio.MainActivity"
             android:label="@string/app_name"
+            android:screenOrientation="portrait"
             android:theme="@style/FullscreenTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -34,7 +35,7 @@
         <activity
             android:name="com.example.monith.RADio.ControlActivity"
             android:label="@string/title_activity_control"
-            android:theme="@style/FullscreenTheme"></activity>
+            android:theme="@style/FullscreenTheme" />
     </application>
 
 </manifest>

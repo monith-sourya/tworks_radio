@@ -25,7 +25,7 @@ import android.widget.Toast;
 public class StationsDialogFragment extends DialogFragment {
 
 
-    public static final String PREFS_NAME = "STATIONS_APP";
+    public static final String PREFS_NAME = "RADIO_APP";
     public static final String STATIONS = "saved_stations";
 
     ListView list ;
@@ -66,9 +66,6 @@ public class StationsDialogFragment extends DialogFragment {
 
                 removeStation(context,values.get(position));
 
-                Toast.makeText(getActivity(), String.format("%s Deleted", values.get(position)), Toast.LENGTH_SHORT).show();
-
-                dismiss();
                 return false;
             }
         });
@@ -112,10 +109,16 @@ public class StationsDialogFragment extends DialogFragment {
 
     public void removeStation(Context context, Float value) {
         ArrayList<Float> stations = getStations(context);
-        if (stations != null) {
+
+        if(stations != null && stations.size()>1){
             stations.remove(value);
             Collections.sort(stations);
             saveStations(context, stations);
+            Toast.makeText(getActivity(), String.format("%s Deleted", value), Toast.LENGTH_SHORT).show();
+            dismiss();
+        }
+        if (stations != null && stations.size()==1) {
+            Toast.makeText(getActivity(), "Can't delete all saved stations.", Toast.LENGTH_LONG).show();
         }
     }
 
