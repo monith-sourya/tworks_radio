@@ -195,21 +195,24 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
             e.printStackTrace();
         }
 
+        gifDrawableRefresh.stop();
+
         gifImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(gifDrawableRefresh.isRunning()) {
-                    gifDrawableRefresh.stop();
-                    gifDrawableRefresh.seekTo(0);
-                }else{
-                    gifDrawableRefresh.start();
-                }
+//                if(gifDrawableRefresh.isRunning()) {
+//                    gifDrawableRefresh.stop();
+//                    gifDrawableRefresh.seekTo(0);
+//                }else{
+//                    gifDrawableRefresh.start();
+//                }
+                gifDrawableRefresh.start();
                 refresh();
             }
         });
-
-        gifDrawableRefresh.stop();
-        gifDrawableRefresh.seekTo(0);
+//
+//        gifDrawableRefresh.stop();
+//        gifDrawableRefresh.seekTo(0);
     }
 
     private void initController(){
@@ -228,24 +231,25 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
 
             @Override
             public void onAngleChange(int angle, int percent){
-//                if (Connected) {
-//                    logView = (TextView)findViewById(R.id.logTextControl);
-//                    logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
-//
-////                String x = ;
-////                byte[] bytes = x.getBytes(Charset.defaultCharset());
-//                    percent/=2;
-//
-//                    byte[] bytes = toByteArray(percent);
-//
-//                    if(percent!=0) {
-//                        mBluetoothConnection.write(bytes);
-//                    }
-//                    logView.append("Sending Message: "+ percent +"\n");
-//                    scrollToBottom();
-//                } else {
-//                    Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
-//                }
+                if (Connected) {
+                    logView = (TextView)findViewById(R.id.logTextControl);
+                    logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
+
+//                String x = ;
+//                byte[] bytes = x.getBytes(Charset.defaultCharset());
+                    percent/=2;
+
+                    byte[] bytes = toByteArray(percent);
+
+                    if(percent!=0) {
+                        mBluetoothConnection.write(bytes);
+                    }
+                    logView.append("Sending Message: "+ percent +"\n");
+                    scrollToBottom();
+                } else {
+                    Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
+                    buttonLoading.setVisibility(View.VISIBLE);
+                }
             }
         });
 
@@ -270,10 +274,12 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
                 logView.append("Volume "+incoming+"\n");
                 scrollToBottom();
 
+                gifDrawableRefresh.stop();
                 volumeView.setText(String.format(Locale.US, "%.0f", incoming));
             }else if(incoming==(float)424.6){
 
                 Connected = true;
+                buttonLoading.setVisibility(View.GONE);
                 logView.append("Connected.\n");
                 scrollToBottom();
             }else{
@@ -288,6 +294,7 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
 
                 horizontalWheelView.setCompleteTurnFraction(fraction);
                 updateUi();
+                gifDrawableRefresh.stop();
             }
         }
     };
@@ -402,6 +409,7 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
             scrollToBottom();
         } else {
             Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
+            buttonLoading.setVisibility(View.VISIBLE);
         }
         return;
 
@@ -426,9 +434,33 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
             scrollToBottom();
         } else {
             Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
+            buttonLoading.setVisibility(View.VISIBLE);
         }
         return;
 
+    }
+
+    public void rightChange(){
+        if (Connected) {
+            logView = (TextView)findViewById(R.id.logTextControl);
+            logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
+
+            savedStations = getStations(getApplicationContext());
+            Float current = Float.parseFloat(tvAngle.getText().toString());
+
+            for(int i=0;i<savedStations.size();i++){
+                if(savedStations.get(i)>current){
+                    StationChange(savedStations.get(i));
+                    return;
+                }
+            }
+            logView.append("Station Changed.\n");
+            scrollToBottom();
+        } else {
+            Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
+            buttonLoading.setVisibility(View.VISIBLE);
+        }
+        return;
     }
 
     public void savedStationsClick(View view){
@@ -442,10 +474,11 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
     }
 
     public void refresh(){
-        if (Connected) {
+
+        testConnection();
+        if (true) {
             logView = (TextView)findViewById(R.id.logTextControl);
             logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
-
             int x = 105;
             byte[] bytes = toByteArray(x);
 
@@ -454,19 +487,20 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
             logView.append("Sending Message: "+ x +"\n");
             scrollToBottom();
 
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+//            try {
+//                Thread.sleep(1000);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
 
-            gifDrawableRefresh.stop();
-            gifDrawableRefresh.seekTo(0);
+//            gifDrawableRefresh.stop();
+//            gifDrawableRefresh.seekTo(0);
         } else {
             Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
 
-            gifDrawableRefresh.stop();
-            gifDrawableRefresh.seekTo(0);
+            buttonLoading.setVisibility(View.VISIBLE);
+//            gifDrawableRefresh.stop();
+//            gifDrawableRefresh.seekTo(0);
         }
     }
     public void refreshClick(View view){
@@ -490,6 +524,7 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
             scrollToBottom();
         } else {
             Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
+            buttonLoading.setVisibility(View.VISIBLE);
         }
     }
 
@@ -585,6 +620,7 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
                         StationChange(frequency);
                     } else {
                         Toast.makeText(getApplicationContext(), "Please connect to device.", Toast.LENGTH_LONG).show();
+                        buttonLoading.setVisibility(View.VISIBLE);
                     }
                     return false;
                 } else if(event.getAction() == MotionEvent.ACTION_DOWN) {
@@ -728,9 +764,10 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
             horizontalWheelView.setCompleteTurnFraction(fraction);
             writedata();
             updateUi();
-            Toast.makeText(getApplicationContext(),"Station Changed to: "+frequency,Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(),"Station Changed to: "+frequency,Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
+            buttonLoading.setVisibility(View.VISIBLE);
         }
     }
 
