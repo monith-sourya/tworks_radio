@@ -431,7 +431,7 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
             Float current = Float.parseFloat(tvAngle.getText().toString());
 
             if(savedStations.get(savedStations.size()-1).equals(current)){
-                Toast.makeText(getApplicationContext(), "This is the first station.", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "This is the last station.", Toast.LENGTH_LONG).show();
                 return;
             }
             for(int i=0;i<savedStations.size();i++){
