@@ -279,8 +279,10 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
             }else if(incoming==(float)424.6){
 
                 Connected = true;
+                firstRefresh();
                 buttonLoading.setVisibility(View.GONE);
                 logView.append("Connected.\n");
+
                 scrollToBottom();
             }else{
                 logView.append("Frequency: "+incoming+"\n");
@@ -399,6 +401,10 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
             savedStations = getStations(getApplicationContext());
             Float current = Float.parseFloat(tvAngle.getText().toString());
 
+            if(savedStations.get(0).equals(current)){
+                Toast.makeText(getApplicationContext(), "This is the first station.", Toast.LENGTH_LONG).show();
+                return;
+            }
             for(int i=(savedStations.size()-1);i>=0;i--){
                 if(savedStations.get(i)<current){
                     StationChange(savedStations.get(i));
@@ -424,6 +430,10 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
             savedStations = getStations(getApplicationContext());
             Float current = Float.parseFloat(tvAngle.getText().toString());
 
+            if(savedStations.get(savedStations.size()-1).equals(current)){
+                Toast.makeText(getApplicationContext(), "This is the first station.", Toast.LENGTH_LONG).show();
+                return;
+            }
             for(int i=0;i<savedStations.size();i++){
                 if(savedStations.get(i)>current){
                     StationChange(savedStations.get(i));
@@ -476,6 +486,34 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
     public void refresh(){
 
         testConnection();
+        if (true) {
+            logView = (TextView)findViewById(R.id.logTextControl);
+            logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
+            int x = 105;
+            byte[] bytes = toByteArray(x);
+
+            mBluetoothConnection.write(bytes);
+
+            logView.append("Sending Message: "+ x +"\n");
+            scrollToBottom();
+
+//            try {
+//                Thread.sleep(1000);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+
+//            gifDrawableRefresh.stop();
+//            gifDrawableRefresh.seekTo(0);
+        } else {
+            Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
+
+            buttonLoading.setVisibility(View.VISIBLE);
+//            gifDrawableRefresh.stop();
+//            gifDrawableRefresh.seekTo(0);
+        }
+    }
+    public void firstRefresh(){
         if (true) {
             logView = (TextView)findViewById(R.id.logTextControl);
             logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);

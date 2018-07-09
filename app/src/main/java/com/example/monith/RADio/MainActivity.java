@@ -204,7 +204,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         Log.d(TAG, "onDestroy: called.");
 
-        unregisterReceiver(mBroadcastReceiver1);
+//        unregisterReceiver(mBroadcastReceiver1);
 //        unregisterReceiver(mBroadcastReceiver3);
 //        unregisterReceiver(mBroadcastReceiver4);
         unregisterReceiver(broadcastReceiver);
