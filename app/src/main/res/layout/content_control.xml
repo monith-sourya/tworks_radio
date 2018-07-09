@@ -40,6 +40,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/buttonLoading" />
+
     <LinearLayout
         android:id="@+id/linearLayout"
         android:layout_width="fill_parent"
@@ -175,10 +176,10 @@
         android:id="@+id/btnFloat"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
+        android:layout_marginBottom="0dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="0dp"
         android:onClick="savedStationsClick"
         android:text="Saved Stations"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -227,8 +228,9 @@
             android:textSize="18sp" />
     </LinearLayout>
 
-    <Button style="@style/Widget.AppCompat.Button.Borderless"
+    <Button
         android:id="@+id/btnSaveStation"
+        style="@style/Widget.AppCompat.Button.Borderless"
         android:layout_width="124dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="0dp"

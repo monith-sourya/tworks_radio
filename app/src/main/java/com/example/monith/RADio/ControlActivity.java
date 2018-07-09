@@ -200,12 +200,16 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
             public void onClick(View v) {
                 if(gifDrawableRefresh.isRunning()) {
                     gifDrawableRefresh.stop();
+                    gifDrawableRefresh.seekTo(0);
                 }else{
                     gifDrawableRefresh.start();
                 }
                 refresh();
             }
         });
+
+        gifDrawableRefresh.stop();
+        gifDrawableRefresh.seekTo(0);
     }
 
     private void initController(){
@@ -224,28 +228,26 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
 
             @Override
             public void onAngleChange(int angle, int percent){
-                if (Connected) {
-                    logView = (TextView)findViewById(R.id.logTextControl);
-                    logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
-
-//                String x = ;
-//                byte[] bytes = x.getBytes(Charset.defaultCharset());
-                    percent/=2;
-
-                    byte[] bytes = toByteArray(percent);
-
-                    if(percent!=0) {
-                        mBluetoothConnection.write(bytes);
-                    }
-                    logView.append("Sending Message: "+ percent +"\n");
-                    scrollToBottom();
-                } else {
-                    Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
-                }
+//                if (Connected) {
+//                    logView = (TextView)findViewById(R.id.logTextControl);
+//                    logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
+//
+////                String x = ;
+////                byte[] bytes = x.getBytes(Charset.defaultCharset());
+//                    percent/=2;
+//
+//                    byte[] bytes = toByteArray(percent);
+//
+//                    if(percent!=0) {
+//                        mBluetoothConnection.write(bytes);
+//                    }
+//                    logView.append("Sending Message: "+ percent +"\n");
+//                    scrollToBottom();
+//                } else {
+//                    Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
+//                }
             }
         });
-
-
 
     }
     BroadcastReceiver mReceiver = new BroadcastReceiver() {
@@ -368,11 +370,6 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
         mBluetoothConnection.startClient(device,uuid);
 
         Log.d(TAG, "startBTConnection:RFCOM Bluetooth Connection.");
-        Context context = getApplicationContext();
-        String text = "Successfully Connected to Device.";
-        Toast toast = Toast.makeText(context, text, Toast.LENGTH_SHORT);
-        toast.show();
-
     }
 
     @Override
@@ -456,8 +453,20 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
 
             logView.append("Sending Message: "+ x +"\n");
             scrollToBottom();
+
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            gifDrawableRefresh.stop();
+            gifDrawableRefresh.seekTo(0);
         } else {
             Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
+
+            gifDrawableRefresh.stop();
+            gifDrawableRefresh.seekTo(0);
         }
     }
     public void refreshClick(View view){
