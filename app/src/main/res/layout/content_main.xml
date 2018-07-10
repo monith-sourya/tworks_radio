@@ -26,12 +26,18 @@
     <pl.droidsonroids.gif.GifImageView
         android:id="@+id/gif"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:layout_editor_absoluteX="162dp"
-        tools:layout_editor_absoluteY="493dp" />
+        android:layout_height="341dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/btnAboutActivity"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnPairActivity" />
 
     <Button
-        android:id="@+id/btnPairActivity"
+        android:id="@+id/btnAboutActivity"
         style="@style/Widget.AppCompat.Button.Borderless.Colored"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
