@@ -38,7 +38,11 @@
             android:label="@string/title_activity_control"
             android:screenOrientation="portrait"
             android:theme="@style/FullscreenTheme" />
-        <activity android:name=".AboutActivity"></activity>
+        <activity
+            android:name=".AboutActivity"
+            android:label="@string/title_activity_about"
+            android:screenOrientation="portrait"
+            android:theme="@style/FullscreenTheme" />
     </application>
 
 </manifest>

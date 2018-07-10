@@ -204,18 +204,18 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         Log.d(TAG, "onDestroy: called.");
 
-//        unregisterReceiver(mBroadcastReceiver1);
-//        unregisterReceiver(mBroadcastReceiver3);
-//        unregisterReceiver(mBroadcastReceiver4);
         unregisterReceiver(broadcastReceiver);
-
-//        mBluetoothAdapter.cancelDiscovery();
         super.onDestroy();
     }
 
 
     public void btnPairActivity(View view){
         Intent i = new Intent(this, PairActivity.class);
+        startActivity(i);
+    }
+
+    public void btnAboutActivity(View view){
+        Intent i = new Intent(this, AboutActivity.class);
         startActivity(i);
     }
 
