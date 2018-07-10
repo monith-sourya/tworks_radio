@@ -12,9 +12,10 @@
         android:id="@+id/buttonLoading"
         android:layout_width="match_parent"
         android:layout_height="40dp"
-        android:layout_gravity="top|center_horizontal"
-
-        app:BL_backgroundColor="#80ffffff"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        app:BL_backgroundColor="#80104CBD"
         app:BL_circleColor="#00AFEF"
         app:BL_circleColorSecond="#8000AFEF"
         app:BL_enable="true"
@@ -22,15 +23,21 @@
         app:BL_text="Start"
         app:BL_textColor="#FFFFFF"
         app:BL_textSize="14sp"
-        tools:layout_editor_absoluteX="8dp"
-        tools:layout_editor_absoluteY="8dp" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
+        android:id="@+id/linearLayout3"
         android:layout_width="match_parent"
         android:layout_height="657dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:gravity="fill_vertical"
         android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/buttonLoading">
 
         <pl.droidsonroids.gif.GifImageView
@@ -140,14 +147,15 @@
         <Button
             android:id="@+id/btnSaveStation"
             style="@style/Widget.AppCompat.Button.Borderless"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_marginBottom="8dp"
             android:layout_marginEnd="0dp"
             android:layout_marginStart="0dp"
             android:onClick="saveClick"
-            android:text="Save Station" />
+            android:text="Save Station"
+            android:textColor="@color/colorPrimary" />
 
         <LinearLayout
             android:id="@+id/linearLayout2"
@@ -205,6 +213,7 @@
 
         <Button
             android:id="@+id/btnFloat"
+            style="@style/Widget.AppCompat.Button.Borderless.Colored"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|center_horizontal"
@@ -213,7 +222,8 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:onClick="savedStationsClick"
-            android:text="Saved Stations" />
+            android:text="Saved Stations"
+            android:textColor="@android:color/holo_blue_light" />
 
 
     </LinearLayout>

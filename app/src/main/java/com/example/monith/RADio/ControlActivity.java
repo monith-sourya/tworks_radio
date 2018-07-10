@@ -52,14 +52,10 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
 
     private BluetoothAdapter mBluetoothAdapter;
 
-    private TextView logView;
-    private ScrollView logScroll;
-
+    //
     private ButtonLoading buttonLoading;
 
-    private Button btnStartConnection;
-    private Button btnSend;
-    private EditText etSend;
+    private VolumeControlView controllerView ;
 
     private boolean deviceFound;
     private static final String DEVICE_NAME = "RADIO002";
@@ -71,18 +67,6 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
     private static final UUID MY_UUID_INSECURE =
             UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     private BluetoothDevice mBTDevice;
-
-    private void scrollToBottom()
-    {
-        logScroll.post(new Runnable()
-        {
-            public void run()
-            {
-                logScroll.smoothScrollTo(0, logView.getBottom());
-            }
-        });
-    }
-
 
     private HorizontalWheelView horizontalWheelView;
     private TextView tvAngle;
@@ -97,40 +81,21 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
 
 
     @Override
+    protected void onResume() {
+        super.onResume();
+
+        if(Connected) {
+            testConnection();
+            refresh();
+        }
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_control);
 
-//        btnStartConnection = (Button) findViewById(R.id.btnStartConn);
-
-        logView = (TextView)findViewById(R.id.logTextControl);
-        logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
-
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        //startConnection();
-
-
-
-//        btnStartConnection.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                findDevice();
-//
-//                if (mBluetoothAdapter.getState()==BluetoothAdapter.STATE_ON) {
-//                    if (deviceFound){
-//                        startConnection();
-//                    }else{
-//
-//                        Context context = getApplicationContext();
-//                        String text = "Device Not Found in Paired List.";
-//                        Toast toast = Toast.makeText(context, text, Toast.LENGTH_LONG);
-//                        toast.show();
-//                    }
-//                }else {
-//                    Toast.makeText(getApplicationContext(),"Please Turn on Bluetooth", Toast.LENGTH_SHORT).show();
-//                }
-//            }
-//        });
 
         initController();
 
@@ -147,19 +112,17 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
         initViews();
         setupListeners();
         updateUi();
-        //IMPORTANT
-        //startConnection();
 
         buttonLoading = (ButtonLoading) findViewById(R.id.buttonLoading);
         buttonLoading.setOnButtonLoadingListener(new ButtonLoading.OnButtonLoadingListener() {
             @Override
             public void onClick() {
-//                Toast.makeText(getApplicationContext(), "onClick", Toast.LENGTH_SHORT).show();
                 findDevice();
 
                 if (mBluetoothAdapter.getState()==BluetoothAdapter.STATE_ON) {
                     if (deviceFound){
                         startConnection();
+
                     }else{
 
                         Context context = getApplicationContext();
@@ -170,7 +133,6 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
                 }else {
                     Toast.makeText(getApplicationContext(),"Please Turn on Bluetooth", Toast.LENGTH_SHORT).show();
                 }
-//                finishLoading();
             }
 
             @Override
@@ -180,9 +142,15 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
 
             @Override
             public void onFinish() {
-                //...
+                if(Connected) {
+                    buttonLoading.setVisibility(View.GONE);
+                }else{
+                    Toast.makeText(getApplicationContext(), "Can't Find Device.", Toast.LENGTH_LONG).show();
+                }
             }
         });
+
+
 
         final GifImageView gifImageView = (GifImageView) findViewById(R.id.refreshGIF);
 
@@ -200,23 +168,17 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
         gifImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                if(gifDrawableRefresh.isRunning()) {
-//                    gifDrawableRefresh.stop();
-//                    gifDrawableRefresh.seekTo(0);
-//                }else{
-//                    gifDrawableRefresh.start();
-//                }
                 gifDrawableRefresh.start();
                 refresh();
             }
         });
-//
-//        gifDrawableRefresh.stop();
-//        gifDrawableRefresh.seekTo(0);
+
+        Connected = false;
     }
 
     private void initController(){
-        VolumeControlView controllerView = (VolumeControlView) findViewById(R.id.controllerView);
+
+        controllerView = (VolumeControlView) findViewById(R.id.controllerView);
 
 
         controllerView.getController().setOnTouchControllerListener( new ControllerImpl.OnTouchControllerListener(){
@@ -232,11 +194,6 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
             @Override
             public void onAngleChange(int angle, int percent){
                 if (Connected) {
-                    logView = (TextView)findViewById(R.id.logTextControl);
-                    logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
-
-//                String x = ;
-//                byte[] bytes = x.getBytes(Charset.defaultCharset());
                     percent/=2;
 
                     byte[] bytes = toByteArray(percent);
@@ -244,8 +201,7 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
                     if(percent!=0) {
                         mBluetoothConnection.write(bytes);
                     }
-                    logView.append("Sending Message: "+ percent +"\n");
-                    scrollToBottom();
+
                 } else {
                     Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
                     buttonLoading.setVisibility(View.VISIBLE);
@@ -259,35 +215,19 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
         public void onReceive(Context context, Intent intent) {
             String text = intent.getStringExtra("theMessage");
 
-
-            logView.append("Incoming Message: " + text);
-//            scrollToBottom();
-
             float incoming = Float.parseFloat(text);
-            logView.append("\n");
-            scrollToBottom();
 
             TextView frequencyView = (TextView)findViewById(R.id.frequencyView);
             TextView volumeView = (TextView) findViewById(R.id.volumeView);
 
             if(incoming<=(float)50){
-                logView.append("Volume "+incoming+"\n");
-                scrollToBottom();
-
                 gifDrawableRefresh.stop();
                 volumeView.setText(String.format(Locale.US, "%.0f", incoming));
             }else if(incoming==(float)424.6){
 
                 Connected = true;
                 firstRefresh();
-                buttonLoading.setVisibility(View.GONE);
-                logView.append("Connected.\n");
-
-                scrollToBottom();
             }else{
-                logView.append("Frequency: "+incoming+"\n");
-                scrollToBottom();
-
                 frequencyView.setText(String.format(Locale.US, "%.01f", incoming));
 
                 double fraction = (double)incoming;
@@ -306,23 +246,14 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
         public void onReceive(Context context, Intent intent) {
             String text = intent.getStringExtra("connection");
 
-            logView.append("Intent Received.\n");
-            scrollToBottom();
             try {
-                Thread.sleep(500);
+                Thread.sleep(100);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
             testConnection();
 
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-//            refresh();
             finishLoading();
-//            refresh();
         }
     };
 
@@ -395,14 +326,11 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
 
     public void leftClick(View view){
         if (Connected) {
-            logView = (TextView)findViewById(R.id.logTextControl);
-            logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
-
             savedStations = getStations(getApplicationContext());
             Float current = Float.parseFloat(tvAngle.getText().toString());
 
             if(savedStations.get(0).equals(current)){
-                Toast.makeText(getApplicationContext(), "This is the first station.", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "This is the first station.", Toast.LENGTH_SHORT).show();
                 return;
             }
             for(int i=(savedStations.size()-1);i>=0;i--){
@@ -411,8 +339,6 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
                     return;
                 }
             }
-            logView.append("Station Changed.\n");
-            scrollToBottom();
         } else {
             Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
             buttonLoading.setVisibility(View.VISIBLE);
@@ -424,14 +350,12 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
     public void rightClick(View view){
 
         if (Connected) {
-            logView = (TextView)findViewById(R.id.logTextControl);
-            logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
 
             savedStations = getStations(getApplicationContext());
             Float current = Float.parseFloat(tvAngle.getText().toString());
 
             if(savedStations.get(savedStations.size()-1).equals(current)){
-                Toast.makeText(getApplicationContext(), "This is the last station.", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "This is the last station.", Toast.LENGTH_SHORT).show();
                 return;
             }
             for(int i=0;i<savedStations.size();i++){
@@ -440,8 +364,6 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
                     return;
                 }
             }
-            logView.append("Station Changed.\n");
-            scrollToBottom();
         } else {
             Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
             buttonLoading.setVisibility(View.VISIBLE);
@@ -452,9 +374,6 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
 
     public void rightChange(){
         if (Connected) {
-            logView = (TextView)findViewById(R.id.logTextControl);
-            logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
-
             savedStations = getStations(getApplicationContext());
             Float current = Float.parseFloat(tvAngle.getText().toString());
 
@@ -464,8 +383,6 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
                     return;
                 }
             }
-            logView.append("Station Changed.\n");
-            scrollToBottom();
         } else {
             Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
             buttonLoading.setVisibility(View.VISIBLE);
@@ -474,9 +391,6 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
     }
 
     public void savedStationsClick(View view){
-        logView = (TextView)findViewById(R.id.logTextControl);
-        logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
-
         FragmentManager fm = getFragmentManager();
         StationsDialogFragment dialogFragment = new StationsDialogFragment();
         dialogFragment.show(fm, "Sample Fragment");
@@ -485,54 +399,26 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
 
     public void refresh(){
 
-        testConnection();
-        if (true) {
-            logView = (TextView)findViewById(R.id.logTextControl);
-            logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
+        if (Connected) {
             int x = 105;
             byte[] bytes = toByteArray(x);
 
             mBluetoothConnection.write(bytes);
-
-            logView.append("Sending Message: "+ x +"\n");
-            scrollToBottom();
-
-//            try {
-//                Thread.sleep(1000);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-
-//            gifDrawableRefresh.stop();
-//            gifDrawableRefresh.seekTo(0);
         } else {
             Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
 
             buttonLoading.setVisibility(View.VISIBLE);
-//            gifDrawableRefresh.stop();
-//            gifDrawableRefresh.seekTo(0);
         }
+        finishRefresh();
+        return;
     }
     public void firstRefresh(){
         if (true) {
-            logView = (TextView)findViewById(R.id.logTextControl);
-            logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
             int x = 105;
             byte[] bytes = toByteArray(x);
 
             mBluetoothConnection.write(bytes);
 
-            logView.append("Sending Message: "+ x +"\n");
-            scrollToBottom();
-
-//            try {
-//                Thread.sleep(1000);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-
-//            gifDrawableRefresh.stop();
-//            gifDrawableRefresh.seekTo(0);
         } else {
             Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
 
@@ -547,9 +433,6 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
 
     public void saveClick(View view){
         if (Connected) {
-            logView = (TextView)findViewById(R.id.logTextControl);
-            logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
-
             final Context context = getApplicationContext();
             String val = tvAngle.getText().toString();
             Float frequency = Float.parseFloat(val);
@@ -558,8 +441,6 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
 
             Toast.makeText(getApplicationContext(), String.format(Locale.US, "%.01f Saved", frequency), Toast.LENGTH_SHORT).show();
 
-            logView.append("Saved Station: "+ frequency +"\n");
-            scrollToBottom();
         } else {
             Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
             buttonLoading.setVisibility(View.VISIBLE);
@@ -598,9 +479,6 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
 
     @SuppressLint("ClickableViewAccessibility")
     private void setupListeners() {
-
-        logView = (TextView)findViewById(R.id.logTextControl);
-        logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
         horizontalWheelView.setListener(new HorizontalWheelView.Listener() {
             @Override
             public void onRotationChanged(double radians) {
@@ -678,10 +556,6 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
 
     private void writedata(){
 
-
-        logView = (TextView)findViewById(R.id.logTextControl);
-        logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
-
         float frequency = (float)horizontalWheelView.getCompleteTurnFraction();
         frequency *= (float)20.0;
         frequency += (float) 88.0;
@@ -693,9 +567,6 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
         byte[] bytes = toByteArray(x);
 
         mBluetoothConnection.write(bytes);
-
-        logView.append("Sending Message: "+ x +"\n");
-        scrollToBottom();
 
     }
 
@@ -810,17 +681,12 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
     }
 
     public void testConnection(){
-        logView = (TextView)findViewById(R.id.logTextControl);
-        logScroll = (ScrollView) findViewById(R.id.ScrollPaneControl);
-
         Connected = false;
         int x = 106;
         byte[] bytes = toByteArray(x);
 
         mBluetoothConnection.write(bytes);
 
-        logView.append("Sending Message: "+ x +"\n");
-        scrollToBottom();
     }
     void finishLoading() {
         //call setProgress(false) after 5 second
@@ -829,6 +695,24 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
             public void run() {
                 buttonLoading.setProgress(false);
             }
-        }, 1000);
+        }, 500);
+
+    }
+
+    void finishRefresh(){
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if(gifDrawableRefresh.isRunning()){
+                    Connected = false;
+
+                    gifDrawableRefresh.stop();
+
+                    Toast.makeText(getApplicationContext(),"Please Reconnect to Device.", Toast.LENGTH_SHORT).show();
+
+                    buttonLoading.setVisibility(View.VISIBLE);
+                }
+            }
+        }, 3000);
     }
 }
