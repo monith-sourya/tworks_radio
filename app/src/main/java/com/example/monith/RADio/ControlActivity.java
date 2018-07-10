@@ -81,6 +81,7 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
     //Refresh Button
     private GifDrawable gifDrawableRefresh;
 
+    private SharedPreference sharedPreference;
 
     @Override
     protected void onResume() {
@@ -97,6 +98,20 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
         setContentView(R.layout.activity_control);
 
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        //Checking for First Time use.
+        sharedPreference =new SharedPreference(ControlActivity.this);
+        if(sharedPreference.getApp_runFirst().equals("FIRST"))
+        {
+            addStation(getApplicationContext(), (float)104.0);
+            sharedPreference.setApp_runFirst("NO");
+
+            Toast.makeText(getApplicationContext(), "Thank you for using RADio!", Toast.LENGTH_SHORT).show();
+        }
+        else
+        {
+            // App is not First Time Launch
+        }
 
         // utility for Volume Control View
         initController();
@@ -178,7 +193,6 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
                 refresh();
             }
         });
-
     }
 
     // Utility function for Initializing Controllers for Volume Control
@@ -477,6 +491,11 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
             savedStations = getStations(getApplicationContext());
             Float current = Float.parseFloat(tvAngle.getText().toString());
 
+
+            if(savedStations.size()==0){
+                Toast.makeText(getApplicationContext(), "No Saved Stations", Toast.LENGTH_SHORT).show();
+                return;
+            }
             if(savedStations.get(0).equals(current)){
                 Toast.makeText(getApplicationContext(), "This is the first station.", Toast.LENGTH_SHORT).show();
                 return;
@@ -502,6 +521,10 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
             savedStations = getStations(getApplicationContext());
             Float current = Float.parseFloat(tvAngle.getText().toString());
 
+            if(savedStations.size()==0){
+                Toast.makeText(getApplicationContext(), "No Saved Stations", Toast.LENGTH_SHORT).show();
+                return;
+            }
             if(savedStations.get(savedStations.size()-1).equals(current)){
                 Toast.makeText(getApplicationContext(), "This is the last station.", Toast.LENGTH_SHORT).show();
                 return;
