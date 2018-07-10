@@ -87,8 +87,13 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
     protected void onResume() {
         super.onResume();
 
-        if(Connected) {
-            testConnection();
+        if (mBluetoothAdapter.getState()==BluetoothAdapter.STATE_ON) {
+            if(Connected) {
+                testConnection();
+            }
+        } else {
+            Toast.makeText(getApplicationContext(), "Please Turn on Bluetooth", Toast.LENGTH_LONG).show();
+            finish();
         }
     }
 
@@ -139,9 +144,10 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
         buttonLoading.setOnButtonLoadingListener(new ButtonLoading.OnButtonLoadingListener() {
             @Override
             public void onClick() {
-                findDevice();
+
 
                 if (mBluetoothAdapter.getState()==BluetoothAdapter.STATE_ON) {
+                    findDevice();
                     if (deviceFound){
                         startConnection();
 
@@ -213,19 +219,25 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
 
             @Override
             public void onAngleChange(int angle, int percent){
-                if (Connected) {
-                    percent/=2;
 
-                    byte[] bytes = toByteArray(percent);
+                if (mBluetoothAdapter.getState() == BluetoothAdapter.STATE_ON) {
+                    if (Connected) {
+                        percent/=2;
 
-                    // Writes Volume to Bluetooth
-                    if(percent!=0) {
-                        mBluetoothConnection.write(bytes);
+                        byte[] bytes = toByteArray(percent);
+
+                        // Writes Volume to Bluetooth
+                        if(percent!=0) {
+                            mBluetoothConnection.write(bytes);
+                        }
+
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
+                        buttonLoading.setVisibility(View.VISIBLE);
                     }
-
                 } else {
-                    Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
-                    buttonLoading.setVisibility(View.VISIBLE);
+                    Toast.makeText(getApplicationContext(), "Please Turn on Bluetooth", Toast.LENGTH_LONG).show();
+                    finish();
                 }
             }
         });
@@ -425,16 +437,21 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
             public boolean onTouch(View v, MotionEvent event) {
                 if(event.getAction() == MotionEvent.ACTION_UP) {
                     // release
-                    if (Connected) {
-//                        writedata();
+                    if (mBluetoothAdapter.getState()==BluetoothAdapter.STATE_ON) {
+                        if (Connected) {
+    //                        writedata();
 
-                        float frequency = Float.parseFloat(tvAngle.getText().toString());
-                        StationChange(frequency);
+                            float frequency = Float.parseFloat(tvAngle.getText().toString());
+                            StationChange(frequency);
+                        } else {
+                            Toast.makeText(getApplicationContext(), "Please connect to device.", Toast.LENGTH_LONG).show();
+                            buttonLoading.setVisibility(View.VISIBLE);
+                        }
+                        return false;
                     } else {
-                        Toast.makeText(getApplicationContext(), "Please connect to device.", Toast.LENGTH_LONG).show();
-                        buttonLoading.setVisibility(View.VISIBLE);
+                        Toast.makeText(getApplicationContext(), "Please Turn on Bluetooth", Toast.LENGTH_LONG).show();
+                        finish();
                     }
-                    return false;
                 } else if(event.getAction() == MotionEvent.ACTION_DOWN) {
                     // pressed
 
@@ -487,28 +504,33 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
 
     // Searches for the next Lower Station from saved Stations list.
     public void leftClick(View view){
-        if (Connected) {
-            savedStations = getStations(getApplicationContext());
-            Float current = Float.parseFloat(tvAngle.getText().toString());
+        if (mBluetoothAdapter.getState()==BluetoothAdapter.STATE_ON) {
+            if (Connected) {
+                savedStations = getStations(getApplicationContext());
+                Float current = Float.parseFloat(tvAngle.getText().toString());
 
 
-            if(savedStations.size()==0){
-                Toast.makeText(getApplicationContext(), "No Saved Stations", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            if(savedStations.get(0).equals(current)){
-                Toast.makeText(getApplicationContext(), "This is the first station.", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            for(int i=(savedStations.size()-1);i>=0;i--){
-                if(savedStations.get(i)<current){
-                    StationChange(savedStations.get(i));
+                if(savedStations.size()==0){
+                    Toast.makeText(getApplicationContext(), "No Saved Stations", Toast.LENGTH_SHORT).show();
                     return;
                 }
+                if(savedStations.get(0).equals(current)){
+                    Toast.makeText(getApplicationContext(), "This is the first station.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                for(int i=(savedStations.size()-1);i>=0;i--){
+                    if(savedStations.get(i)<current){
+                        StationChange(savedStations.get(i));
+                        return;
+                    }
+                }
+            } else {
+                Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
+                buttonLoading.setVisibility(View.VISIBLE);
             }
         } else {
-            Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
-            buttonLoading.setVisibility(View.VISIBLE);
+            Toast.makeText(getApplicationContext(), "Please Turn on Bluetooth", Toast.LENGTH_LONG).show();
+            finish();
         }
     }
 
@@ -516,30 +538,35 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
 
     public void rightClick(View view){
 
-        if (Connected) {
+        if (mBluetoothAdapter.getState()==BluetoothAdapter.STATE_ON) {
+            if (Connected) {
 
-            savedStations = getStations(getApplicationContext());
-            Float current = Float.parseFloat(tvAngle.getText().toString());
+                savedStations = getStations(getApplicationContext());
+                Float current = Float.parseFloat(tvAngle.getText().toString());
 
-            if(savedStations.size()==0){
-                Toast.makeText(getApplicationContext(), "No Saved Stations", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            if(savedStations.get(savedStations.size()-1).equals(current)){
-                Toast.makeText(getApplicationContext(), "This is the last station.", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            for(int i=0;i<savedStations.size();i++){
-                if(savedStations.get(i)>current){
-                    StationChange(savedStations.get(i));
+                if(savedStations.size()==0){
+                    Toast.makeText(getApplicationContext(), "No Saved Stations", Toast.LENGTH_SHORT).show();
                     return;
                 }
+                if(savedStations.get(savedStations.size()-1).equals(current)){
+                    Toast.makeText(getApplicationContext(), "This is the last station.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                for(int i=0;i<savedStations.size();i++){
+                    if(savedStations.get(i)>current){
+                        StationChange(savedStations.get(i));
+                        return;
+                    }
+                }
+            } else {
+                Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
+                buttonLoading.setVisibility(View.VISIBLE);
             }
+            return;
         } else {
-            Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
-            buttonLoading.setVisibility(View.VISIBLE);
+            Toast.makeText(getApplicationContext(), "Please Turn on Bluetooth", Toast.LENGTH_LONG).show();
+            finish();
         }
-        return;
 
     }
 
@@ -554,48 +581,63 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
     // Method refreshes Current Frequency and Volume values
     public void refresh(){
 
-        if (Connected) {
-            int x = 105;
-            byte[] bytes = toByteArray(x);
+        if (mBluetoothAdapter.getState()==BluetoothAdapter.STATE_ON) {
+            if (Connected) {
+                int x = 105;
+                byte[] bytes = toByteArray(x);
 
-            mBluetoothConnection.write(bytes);
+                mBluetoothConnection.write(bytes);
+            } else {
+                Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
+
+                buttonLoading.setVisibility(View.VISIBLE);
+            }
+            finishRefresh();
+            return;
         } else {
-            Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
-
-            buttonLoading.setVisibility(View.VISIBLE);
+            Toast.makeText(getApplicationContext(), "Please Turn on Bluetooth", Toast.LENGTH_LONG).show();
+            finish();
         }
-        finishRefresh();
-        return;
     }
     public void firstRefresh(){
-        if (true) {
-            int x = 105;
-            byte[] bytes = toByteArray(x);
+        if (mBluetoothAdapter.getState()==BluetoothAdapter.STATE_ON) {
+            if (true) {
+                int x = 105;
+                byte[] bytes = toByteArray(x);
 
-            mBluetoothConnection.write(bytes);
+                mBluetoothConnection.write(bytes);
 
+            } else {
+                Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
+
+                buttonLoading.setVisibility(View.VISIBLE);
+            }
         } else {
-            Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
-
-            buttonLoading.setVisibility(View.VISIBLE);
+            Toast.makeText(getApplicationContext(), "Please Turn on Bluetooth", Toast.LENGTH_LONG).show();
+            finish();
         }
     }
 
 
     // Saves Current frequency value to the Saved Stations List
     public void saveClick(View view){
-        if (Connected) {
-            final Context context = getApplicationContext();
-            String val = tvAngle.getText().toString();
-            Float frequency = Float.parseFloat(val);
+        if (mBluetoothAdapter.getState()==BluetoothAdapter.STATE_ON) {
+            if (Connected) {
+                final Context context = getApplicationContext();
+                String val = tvAngle.getText().toString();
+                Float frequency = Float.parseFloat(val);
 
-            addStation(context, frequency);
+                addStation(context, frequency);
 
-            Toast.makeText(getApplicationContext(), String.format(Locale.US, "%.01f Saved", frequency), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), String.format(Locale.US, "%.01f Saved", frequency), Toast.LENGTH_SHORT).show();
 
+            } else {
+                Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
+                buttonLoading.setVisibility(View.VISIBLE);
+            }
         } else {
-            Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
-            buttonLoading.setVisibility(View.VISIBLE);
+            Toast.makeText(getApplicationContext(), "Please Turn on Bluetooth", Toast.LENGTH_LONG).show();
+            finish();
         }
     }
 
@@ -683,18 +725,23 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
     // Changes Station to given value.
     public void StationChange(Float frequency){
 
-        if (Connected) {
-            double fraction = (double)frequency;
-            fraction-=88;
-            fraction/=20;
+        if (mBluetoothAdapter.getState()==BluetoothAdapter.STATE_ON) {
+            if (Connected) {
+                double fraction = (double)frequency;
+                fraction-=88;
+                fraction/=20;
 
-            horizontalWheelView.setCompleteTurnFraction(fraction);
-            writedata();
-            updateUi();
-            Toast.makeText(getApplicationContext(),"Station Changed to: "+frequency,Toast.LENGTH_SHORT).show();
+                horizontalWheelView.setCompleteTurnFraction(fraction);
+                writedata();
+                updateUi();
+                Toast.makeText(getApplicationContext(),"Station Changed to: "+frequency,Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
+                buttonLoading.setVisibility(View.VISIBLE);
+            }
         } else {
-            Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
-            buttonLoading.setVisibility(View.VISIBLE);
+            Toast.makeText(getApplicationContext(), "Please Turn on Bluetooth", Toast.LENGTH_LONG).show();
+            finish();
         }
     }
 
