@@ -18,8 +18,10 @@
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.4">
 
         <TextView
             android:id="@+id/textView"
@@ -30,7 +32,7 @@
             android:text="RADio App\n"
             android:textAlignment="center"
             android:textColor="#104CBD"
-            android:textSize="28sp"
+            android:textSize="36sp"
             android:textStyle="bold"
             tools:layout_editor_absoluteX="176dp"
             tools:layout_editor_absoluteY="141dp" />
@@ -54,7 +56,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_weight="0"
-            android:text="Monith Sourya \nC Vineel\nArjun Lokireddy\nRishi Radia\nManik Prabhu CM"
+            android:text="Monith Sourya \n\nC Vineel\n\nArjun Lokireddy\n\nRishi Radia\n\nManik Prabhu CM"
             android:textAlignment="center"
             android:textColor="@android:color/holo_blue_bright"
             tools:layout_editor_absoluteX="176dp"
