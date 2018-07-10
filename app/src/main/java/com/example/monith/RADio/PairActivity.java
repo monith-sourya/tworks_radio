@@ -16,6 +16,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -87,20 +88,9 @@ public class PairActivity extends AppCompatActivity implements AdapterView.OnIte
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-//                Intent i = new Intent(PairActivity.this, MainActivity.class);
-//                startActivity(i);
                 finish();
             }
         });
-//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-//            }
-//        });
         lvNewDevices.setOnItemClickListener(PairActivity.this);
 
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
@@ -110,9 +100,7 @@ public class PairActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     public void Discover(){
-        if(mBluetoothAdapter.getState()!=BluetoothAdapter.STATE_ON){
-        }else {
-
+        if (mBluetoothAdapter.getState()==BluetoothAdapter.STATE_ON) {
             if (mBluetoothAdapter.isDiscovering()) {
                 mBluetoothAdapter.cancelDiscovery();
                 //check BT permissions in manifest
@@ -131,10 +119,11 @@ public class PairActivity extends AppCompatActivity implements AdapterView.OnIte
                 IntentFilter discoverDevicesIntent = new IntentFilter(BluetoothDevice.ACTION_FOUND);
                 registerReceiver(mBroadcastReceiver3, discoverDevicesIntent);
             }
+        } else {
+            Toast.makeText(getApplicationContext(), "Please Turn on Bluetooth", Toast.LENGTH_LONG).show();
         }
     }
     public void btnDiscover(View view) {
-
         Discover();
     }
 
@@ -143,6 +132,7 @@ public class PairActivity extends AppCompatActivity implements AdapterView.OnIte
             mBluetoothAdapter.cancelDiscovery();
         }
     }
+
     private void checkBTPermissions() {
         if(Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP){
             int permissionCheck = this.checkSelfPermission("Manifest.permission.ACCESS_FINE_LOCATION");
@@ -160,15 +150,13 @@ public class PairActivity extends AppCompatActivity implements AdapterView.OnIte
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
         mBluetoothAdapter.cancelDiscovery();
-        String deviceName = mBTDevices.get(position).getName();
-        String deviceAddress = mBTDevices.get(position).getAddress();
+//        String deviceName = mBTDevices.get(position).getName();
+//        String deviceAddress = mBTDevices.get(position).getAddress();
 
         if(Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2){
             mBTDevices.get(position).createBond();
 
             mBTDevice = mBTDevices.get(position);
-
-            //mBluetoothConnection = new BluetoothConnectionService(MainActivity.this);
 
         }
     }

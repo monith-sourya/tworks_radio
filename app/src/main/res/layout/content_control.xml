@@ -20,7 +20,7 @@
         app:BL_circleColorSecond="#8000AFEF"
         app:BL_enable="true"
         app:BL_stateShow="normal"
-        app:BL_text="Start"
+        app:BL_text="Connect"
         app:BL_textColor="#FFFFFF"
         app:BL_textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -38,8 +38,7 @@
         android:orientation="vertical"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buttonLoading"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintTop_toBottomOf="@+id/buttonLoading">
 
         <pl.droidsonroids.gif.GifImageView
             android:id="@+id/refreshGIF"
@@ -68,7 +67,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="top|center_vertical|center"
                 android:layout_weight="2"
-                android:text="Frequency"
+                android:text="88.0"
                 android:textAlignment="center"
                 android:textAppearance="@android:style/TextAppearance.Material.Large"
                 android:textColor="@android:color/holo_blue_dark"

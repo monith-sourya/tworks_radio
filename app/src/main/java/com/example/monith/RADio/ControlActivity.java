@@ -52,7 +52,7 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
 
     private BluetoothAdapter mBluetoothAdapter;
 
-    //
+    //Start Connection Button
     private ButtonLoading buttonLoading;
 
     private VolumeControlView controllerView ;
@@ -62,21 +62,23 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
 
     BluetoothConnectionService mBluetoothConnection;
 
-    private boolean Connected;
+    private boolean Connected = false;
 
     private static final UUID MY_UUID_INSECURE =
             UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     private BluetoothDevice mBTDevice;
 
+    // For Frequency Selection
     private HorizontalWheelView horizontalWheelView;
     private TextView tvAngle;
 
     public static final String PREFS_NAME = "RADIO_APP";
     public static final String STATIONS = "saved_stations";
 
+    // For Stations Dialog Fragment
     private ArrayList<Float> savedStations ;
 
-
+    //Refresh Button
     private GifDrawable gifDrawableRefresh;
 
 
@@ -86,7 +88,6 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
 
         if(Connected) {
             testConnection();
-            refresh();
         }
     }
 
@@ -97,22 +98,28 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
 
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
+        // utility for Volume Control View
         initController();
 
+        // Broadcast Receiver for Incoming Messages. -> From BluetoothConnectionService
         LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, new IntentFilter("incomingMessage"));
+
+        // Broadcast receiver for Successfull Connection. From BluetoothConnectionService
         LocalBroadcastManager.getInstance(this).registerReceiver(connectionBroadcastReceiver,new IntentFilter("connectionMessage"));
 
+        // For Connection State Change
         IntentFilter filter = new IntentFilter();
         filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
         filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED);
         filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
         this.registerReceiver(mReceiver1, filter);
 
-
+        // Utility Functions for Horizontal Wheel View
         initViews();
         setupListeners();
         updateUi();
 
+        // Start Connection
         buttonLoading = (ButtonLoading) findViewById(R.id.buttonLoading);
         buttonLoading.setOnButtonLoadingListener(new ButtonLoading.OnButtonLoadingListener() {
             @Override
@@ -124,11 +131,7 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
                         startConnection();
 
                     }else{
-
-                        Context context = getApplicationContext();
-                        String text = "Device Not Found in Paired List.";
-                        Toast toast = Toast.makeText(context, text, Toast.LENGTH_LONG);
-                        toast.show();
+                        Toast.makeText(getApplicationContext(), "Device Not Found in Paired List.", Toast.LENGTH_LONG).show();
                     }
                 }else {
                     Toast.makeText(getApplicationContext(),"Please Turn on Bluetooth", Toast.LENGTH_SHORT).show();
@@ -152,6 +155,7 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
 
 
 
+        // Gif/Button for Refreshing
         final GifImageView gifImageView = (GifImageView) findViewById(R.id.refreshGIF);
 
         try {
@@ -163,8 +167,10 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
             e.printStackTrace();
         }
 
+        //Initializing to still image
         gifDrawableRefresh.stop();
 
+        // Starts Rotation upon click and calls refresh method
         gifImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -173,9 +179,9 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
             }
         });
 
-        Connected = false;
     }
 
+    // Utility function for Initializing Controllers for Volume Control
     private void initController(){
 
         controllerView = (VolumeControlView) findViewById(R.id.controllerView);
@@ -198,6 +204,7 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
 
                     byte[] bytes = toByteArray(percent);
 
+                    // Writes Volume to Bluetooth
                     if(percent!=0) {
                         mBluetoothConnection.write(bytes);
                     }
@@ -208,8 +215,9 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
                 }
             }
         });
-
     }
+
+    //Broadcast Receiver for Incoming Bluetooth Messages. -> From BluetoothConnectionService
     BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -220,14 +228,21 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
             TextView frequencyView = (TextView)findViewById(R.id.frequencyView);
             TextView volumeView = (TextView) findViewById(R.id.volumeView);
 
+            // For Volume (less than 50)
             if(incoming<=(float)50){
                 gifDrawableRefresh.stop();
                 volumeView.setText(String.format(Locale.US, "%.0f", incoming));
-            }else if(incoming==(float)424.6){
+            }
+
+            // Connection Tester.
+            else if(incoming==(float)424.6){
 
                 Connected = true;
                 firstRefresh();
-            }else{
+            }
+
+            // For Frequency
+            else{
                 frequencyView.setText(String.format(Locale.US, "%.01f", incoming));
 
                 double fraction = (double)incoming;
@@ -241,6 +256,7 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
         }
     };
 
+    // Receiver for first Connection confirmation.
     BroadcastReceiver connectionBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -252,7 +268,6 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
                 e.printStackTrace();
             }
             testConnection();
-
             finishLoading();
         }
     };
@@ -270,20 +285,12 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
                 Toast.makeText(getApplicationContext(),"Device Found!", Toast.LENGTH_SHORT).show();
             }
             else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
-            //
 
                 Toast.makeText(getApplicationContext(),"Device Successfully Connected", Toast.LENGTH_SHORT).show();
-//                Intent i = new Intent("finish");
-//                sendBroadcast(i);
-
             }
             else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
 
                 Toast.makeText(getApplicationContext(), "Device Not Found!", Toast.LENGTH_LONG).show();
-//
-//                Intent i = new Intent(ControlActivity.this, MainActivity.class);
-//                startActivity(i);
-//                finish();
             }
             else if (BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED.equals(action)) {
             //Device is about to disconnect
@@ -315,138 +322,13 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
     @Override
     protected void onDestroy() {
         Log.d(TAG, "onDestroy: called.");
-
-//        unregisterReceiver(mReceiver);
         unregisterReceiver(mReceiver1);
-//        unregisterReceiver(connectionBroadcastReceiver);
-
         super.onDestroy();
     }
 
 
-    public void leftClick(View view){
-        if (Connected) {
-            savedStations = getStations(getApplicationContext());
-            Float current = Float.parseFloat(tvAngle.getText().toString());
 
-            if(savedStations.get(0).equals(current)){
-                Toast.makeText(getApplicationContext(), "This is the first station.", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            for(int i=(savedStations.size()-1);i>=0;i--){
-                if(savedStations.get(i)<current){
-                    StationChange(savedStations.get(i));
-                    return;
-                }
-            }
-        } else {
-            Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
-            buttonLoading.setVisibility(View.VISIBLE);
-        }
-        return;
-
-    }
-
-    public void rightClick(View view){
-
-        if (Connected) {
-
-            savedStations = getStations(getApplicationContext());
-            Float current = Float.parseFloat(tvAngle.getText().toString());
-
-            if(savedStations.get(savedStations.size()-1).equals(current)){
-                Toast.makeText(getApplicationContext(), "This is the last station.", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            for(int i=0;i<savedStations.size();i++){
-                if(savedStations.get(i)>current){
-                    StationChange(savedStations.get(i));
-                    return;
-                }
-            }
-        } else {
-            Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
-            buttonLoading.setVisibility(View.VISIBLE);
-        }
-        return;
-
-    }
-
-    public void rightChange(){
-        if (Connected) {
-            savedStations = getStations(getApplicationContext());
-            Float current = Float.parseFloat(tvAngle.getText().toString());
-
-            for(int i=0;i<savedStations.size();i++){
-                if(savedStations.get(i)>current){
-                    StationChange(savedStations.get(i));
-                    return;
-                }
-            }
-        } else {
-            Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
-            buttonLoading.setVisibility(View.VISIBLE);
-        }
-        return;
-    }
-
-    public void savedStationsClick(View view){
-        FragmentManager fm = getFragmentManager();
-        StationsDialogFragment dialogFragment = new StationsDialogFragment();
-        dialogFragment.show(fm, "Sample Fragment");
-
-    }
-
-    public void refresh(){
-
-        if (Connected) {
-            int x = 105;
-            byte[] bytes = toByteArray(x);
-
-            mBluetoothConnection.write(bytes);
-        } else {
-            Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
-
-            buttonLoading.setVisibility(View.VISIBLE);
-        }
-        finishRefresh();
-        return;
-    }
-    public void firstRefresh(){
-        if (true) {
-            int x = 105;
-            byte[] bytes = toByteArray(x);
-
-            mBluetoothConnection.write(bytes);
-
-        } else {
-            Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
-
-            buttonLoading.setVisibility(View.VISIBLE);
-//            gifDrawableRefresh.stop();
-//            gifDrawableRefresh.seekTo(0);
-        }
-    }
-    public void refreshClick(View view){
-        refresh();
-    }
-
-    public void saveClick(View view){
-        if (Connected) {
-            final Context context = getApplicationContext();
-            String val = tvAngle.getText().toString();
-            Float frequency = Float.parseFloat(val);
-
-            addStation(context, frequency);
-
-            Toast.makeText(getApplicationContext(), String.format(Locale.US, "%.01f Saved", frequency), Toast.LENGTH_SHORT).show();
-
-        } else {
-            Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
-            buttonLoading.setVisibility(View.VISIBLE);
-        }
-    }
-
+    //Checks if Device is in Paired List before Attempting to start Connection
     private void findDevice() {
         Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
 
@@ -550,6 +432,7 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
         });
     }
 
+    // Utilities for Horizontal Wheel View
     private void updateUi() {
         updateText();
     }
@@ -586,7 +469,114 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
         super.onRestoreInstanceState(savedInstanceState);
         updateUi();
     }
+    // End utilities
 
+    // Searches for the next Lower Station from saved Stations list.
+    public void leftClick(View view){
+        if (Connected) {
+            savedStations = getStations(getApplicationContext());
+            Float current = Float.parseFloat(tvAngle.getText().toString());
+
+            if(savedStations.get(0).equals(current)){
+                Toast.makeText(getApplicationContext(), "This is the first station.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            for(int i=(savedStations.size()-1);i>=0;i--){
+                if(savedStations.get(i)<current){
+                    StationChange(savedStations.get(i));
+                    return;
+                }
+            }
+        } else {
+            Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
+            buttonLoading.setVisibility(View.VISIBLE);
+        }
+    }
+
+    // Searches for the next Greater Station from saved Stations list.
+
+    public void rightClick(View view){
+
+        if (Connected) {
+
+            savedStations = getStations(getApplicationContext());
+            Float current = Float.parseFloat(tvAngle.getText().toString());
+
+            if(savedStations.get(savedStations.size()-1).equals(current)){
+                Toast.makeText(getApplicationContext(), "This is the last station.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            for(int i=0;i<savedStations.size();i++){
+                if(savedStations.get(i)>current){
+                    StationChange(savedStations.get(i));
+                    return;
+                }
+            }
+        } else {
+            Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
+            buttonLoading.setVisibility(View.VISIBLE);
+        }
+        return;
+
+    }
+
+    // Opens Stations Dialog Fragment
+    public void savedStationsClick(View view){
+        FragmentManager fm = getFragmentManager();
+        StationsDialogFragment dialogFragment = new StationsDialogFragment();
+        dialogFragment.show(fm, "Sample Fragment");
+
+    }
+
+    // Method refreshes Current Frequency and Volume values
+    public void refresh(){
+
+        if (Connected) {
+            int x = 105;
+            byte[] bytes = toByteArray(x);
+
+            mBluetoothConnection.write(bytes);
+        } else {
+            Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
+
+            buttonLoading.setVisibility(View.VISIBLE);
+        }
+        finishRefresh();
+        return;
+    }
+    public void firstRefresh(){
+        if (true) {
+            int x = 105;
+            byte[] bytes = toByteArray(x);
+
+            mBluetoothConnection.write(bytes);
+
+        } else {
+            Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
+
+            buttonLoading.setVisibility(View.VISIBLE);
+        }
+    }
+
+
+    // Saves Current frequency value to the Saved Stations List
+    public void saveClick(View view){
+        if (Connected) {
+            final Context context = getApplicationContext();
+            String val = tvAngle.getText().toString();
+            Float frequency = Float.parseFloat(val);
+
+            addStation(context, frequency);
+
+            Toast.makeText(getApplicationContext(), String.format(Locale.US, "%.01f Saved", frequency), Toast.LENGTH_SHORT).show();
+
+        } else {
+            Toast.makeText(getApplicationContext(), "Please connect to Device.", Toast.LENGTH_LONG).show();
+            buttonLoading.setVisibility(View.VISIBLE);
+        }
+    }
+
+    // Aux Func
     public byte[] toByteArray(int value) {
         return new byte[] {
                 (byte)(value >> 24),
@@ -595,6 +585,7 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
                 (byte)value};
     }
 
+    //Aux Func
     public static byte[] toByteArray(float value) {
         byte[] bytes = new byte[4];
         ByteBuffer.wrap(bytes).putFloat(value);
@@ -616,24 +607,28 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
         editor.apply();
     }
 
+    // Adds Float Value to Shared Preferences using GSON objects.
     public void addStation(Context context, Float value) {
         List<Float> stations = getStations(context);
         if (stations == null)
             stations = new ArrayList<Float>();
-        stations.add(value);
-        Collections.sort(stations);
-        saveStations(context, stations);
+
+        boolean found = false;
+
+            for(int i=0; i< stations.size();i++){
+                if (stations.get(i).equals(value))
+                    found = true;
+            }
+            if (found) {
+                Toast.makeText(getApplicationContext(), "Station Already Saved.", Toast.LENGTH_SHORT).show();
+            } else {
+                stations.add(value);
+                Collections.sort(stations);
+                saveStations(context, stations);
+            }
     }
 
-    public void removeStation(Context context, Float value) {
-        ArrayList<Float> stations = getStations(context);
-        if (stations != null) {
-            stations.remove(value);
-            Collections.sort(stations);
-            saveStations(context, stations);
-        }
-    }
-
+    // Gets Arraylist of saved float values from Shared Preferences using GSON objects.
     public ArrayList<Float> getStations(Context context) {
         SharedPreferences settings;
         List<Float> stations;
@@ -655,14 +650,14 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
         return (ArrayList<Float>) stations;
     }
 
+
+    // When a Station is selected in saved stations list.
     @Override
     public void onStationClick(Float frequency) {
-
-//        Toast.makeText(getApplicationContext(),"Activity received: "+frequency,Toast.LENGTH_LONG).show();
-
         StationChange(frequency);
     }
 
+    // Changes Station to given value.
     public void StationChange(Float frequency){
 
         if (Connected) {
@@ -680,14 +675,7 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
         }
     }
 
-    public void testConnection(){
-        Connected = false;
-        int x = 106;
-        byte[] bytes = toByteArray(x);
-
-        mBluetoothConnection.write(bytes);
-
-    }
+    // Aux for buttonloading
     void finishLoading() {
         //call setProgress(false) after 5 second
         new Handler().postDelayed(new Runnable() {
@@ -699,6 +687,30 @@ public class ControlActivity extends AppCompatActivity implements StationsDialog
 
     }
 
+
+    // Listener for lack of response from device upon test
+    public void testConnection(){
+        Connected = false;
+        int x = 106;
+        byte[] bytes = toByteArray(x);
+
+        mBluetoothConnection.write(bytes);
+
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (!Connected) {
+                    Toast.makeText(getApplicationContext(),"Device is not Connected", Toast.LENGTH_SHORT).show();
+
+                    buttonLoading.setVisibility(View.VISIBLE);
+                }
+            }
+        }, 1000);
+
+    }
+
+
+    // Listener for a lack of response from Device on refresh.
     void finishRefresh(){
         new Handler().postDelayed(new Runnable() {
             @Override

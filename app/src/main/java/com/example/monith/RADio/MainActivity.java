@@ -37,87 +37,29 @@ import pl.droidsonroids.gif.GifImageView;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
+
     private BluetoothAdapter mBluetoothAdapter;
 
-    private ButtonLoading buttonLoading;
-
+    //Variables to Check if device is already paired before launching Control Activity
     private boolean deviceFound;
-    private static final String DEVICE_NAME = "RADIO001";
-
+    private static final String DEVICE_NAME = "RADIO002";
 
     private GifDrawable gifDrawable;
-
-    public static final String PREFS_NAME = "STATIONS_APP";
-    public static final String STATIONS = "saved_stations";
-
-    BluetoothConnectionService mBluetoothConnection;
-
-    private static final UUID MY_UUID_INSECURE =
-            UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
 
     private BluetoothDevice mBTDevice;
 
-    ListView list ;
-
-
-
-    // Begin BT Functions
-    private final BroadcastReceiver mBroadcastReceiver1 = new BroadcastReceiver() {
-        public void onReceive(Context context, Intent intent) {
-
-
-            String action = intent.getAction();
-            // When discovery finds a device
-            if (action.equals(mBluetoothAdapter.ACTION_STATE_CHANGED)) {
-                final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, mBluetoothAdapter.ERROR);
-
-                switch(state){
-                    case BluetoothAdapter.STATE_OFF:
-                        Log.d(TAG, "onReceive: STATE OFF");
-                        break;
-                    case BluetoothAdapter.STATE_TURNING_OFF:
-                        Log.d(TAG, "mBroadcastReceiver1: STATE TURNING OFF");
-                        break;
-                    case BluetoothAdapter.STATE_ON:
-                        Log.d(TAG, "mBroadcastReceiver1: STATE ON\n");
-                        break;
-                    case BluetoothAdapter.STATE_TURNING_ON:
-                        Log.d(TAG, "mBroadcastReceiver1: STATE TURNING ON");
-                        break;
-                }
-            }
-        }
-    };
-
-    BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if(action.equals("finish")){
-//                finish();
-            }
-        }
-    };
-
-    //Bluetooth Functions End
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
-        registerReceiver(broadcastReceiver, new IntentFilter("finish"));
-
-    //Bluetooth Code Below
-
-        //Button btnONOFF = (Button) findViewById(R.id.btnONOFF);
-
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
-//
+        //GIF Code Begins
 
+        //Initializing GIF
         final GifImageView gifImageView = (GifImageView) findViewById(R.id.gif);
 
         try {
@@ -128,14 +70,11 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        //Launch for Control Activity
         gifImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                if(gifDrawable.isRunning()) {
-//                    gifDrawable.stop();
-//                }else{
-//                    gifDrawable.start();
-//                }
                 if (mBluetoothAdapter.getState() == BluetoothAdapter.STATE_ON) {
                     findDevice();
                     if (deviceFound) {
@@ -157,58 +96,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-  /*
-     * starting service method
-     */
-    public void startBTConnection(BluetoothDevice device, UUID uuid){
-        Log.d(TAG, "startBTConnection: Initializing RFCOM Bluetooth Connection.");
-
-
-        mBluetoothConnection = new BluetoothConnectionService(MainActivity.this);
-
-        
-        mBluetoothConnection.startClient(device,uuid);
-
-        Log.d(TAG, "startBTConnection:RFCOM Bluetooth Connection.");
-        Context context = getApplicationContext();
-        String text = "Successfully Connected to Device.";
-        Toast toast = Toast.makeText(context, text, Toast.LENGTH_SHORT);
-        toast.show();
-
-    }
-
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    protected void onDestroy() {
-        Log.d(TAG, "onDestroy: called.");
-
-        unregisterReceiver(broadcastReceiver);
-        super.onDestroy();
-    }
-
-
     public void btnPairActivity(View view){
         Intent i = new Intent(this, PairActivity.class);
         startActivity(i);
@@ -219,56 +106,7 @@ public class MainActivity extends AppCompatActivity {
         startActivity(i);
     }
 
-    /**
-     * This method is required for all devices running API23+
-     * Android must programmatically check the permissions for bluetooth. Putting the proper permissions
-     * in the manifest is not enough.
-     *
-     * NOTE: This will only execute on versions > LOLLIPOP because it is not needed otherwise.
-     */
-    private void checkBTPermissions() {
-        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP){
-            int permissionCheck = this.checkSelfPermission("Manifest.permission.ACCESS_FINE_LOCATION");
-            permissionCheck += this.checkSelfPermission("Manifest.permission.ACCESS_COARSE_LOCATION");
-            if (permissionCheck != 0) {
-
-                this.requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 1001); //Any number
-            }
-        }else{
-            Log.d(TAG, "checkBTPermissions: No need to check permissions. SDK version < LOLLIPOP.");
-        }
-    }
-
-//    @Override
-//    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//
-//
-//        logView = (TextView)findViewById(R.id.logText);
-//        logScroll = (ScrollView) findViewById(R.id.ScrollPane);
-//
-//        mBluetoothAdapter.cancelDiscovery();
-//        String deviceName = mBTDevices.get(position).getName();
-//        String deviceAddress = mBTDevices.get(position).getAddress();
-//
-//        logView.append("Device Selected. \n");
-//        scrollToBottom();
-//        logView.append("Device Name: "+ deviceName+"\n");
-//        scrollToBottom();
-//        logView.append("Device Address: " + deviceAddress+ "\n");
-//        scrollToBottom();
-//
-//        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR2){
-//            logView.append("Trying to Pair with Device: "+deviceName+"\n");
-//            scrollToBottom();
-//            mBTDevices.get(position).createBond();
-//
-//            mBTDevice = mBTDevices.get(position);
-//
-//            mBluetoothConnection = new BluetoothConnectionService(MainActivity.this);
-//
-//        }
-//    }
-
+    // Function to check if Device is already paired
     private void findDevice() {
         Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
 
